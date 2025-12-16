@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Eye, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -16,9 +16,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { CustomerDetailsModal } from '@/components/admin/customer-details-modal';
+import type { User } from '@/lib/types';
 
-const initialCustomers = [
+const initialCustomers: User[] = [
   { id: '1', name: 'John Doe', email: 'john.doe@example.com', role: 'User' },
   { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', role: 'User' },
   { id: '3', name: 'Admin User', email: 'admin@example.com', role: 'Admin' },
@@ -27,6 +29,7 @@ const initialCustomers = [
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = React.useState(initialCustomers);
+  const [selectedCustomer, setSelectedCustomer] = React.useState<User | null>(null);
 
   const handleDelete = (customerId: string) => {
     setCustomers(customers.filter(customer => customer.id !== customerId));
@@ -61,7 +64,7 @@ export default function AdminCustomersPage() {
                   <TableCell>{customer.role}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="icon" disabled>
+                      <Button variant="ghost" size="icon" onClick={() => setSelectedCustomer(customer)}>
                         <Eye className="h-4 w-4" />
                         <span className="sr-only">View</span>
                       </Button>
@@ -96,6 +99,13 @@ export default function AdminCustomersPage() {
           </Table>
         </CardContent>
       </Card>
+      {selectedCustomer && (
+        <CustomerDetailsModal
+            customer={selectedCustomer}
+            isOpen={!!selectedCustomer}
+            onClose={() => setSelectedCustomer(null)}
+        />
+      )}
     </>
   );
 }
