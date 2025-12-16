@@ -29,6 +29,7 @@ import {
     PaginationItem,
     PaginationNext,
     PaginationPrevious,
+    PaginationLink,
 } from '@/components/ui/pagination';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -143,10 +144,10 @@ export default function AdminProductsPage() {
                         <PaginationPrevious href="#" />
                     </PaginationItem>
                     <PaginationItem>
-                        <Button variant="outline">1</Button>
+                        <PaginationLink href="#" isActive>1</PaginationLink>
                     </PaginationItem>
-                    <PaginationItem>
-                         <Button variant="ghost">2</Button>
+                     <PaginationItem>
+                        <PaginationLink href="#">2</PaginationLink>
                     </PaginationItem>
                      <PaginationItem>
                         <PaginationNext href="#" />
