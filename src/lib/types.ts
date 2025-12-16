@@ -1,0 +1,52 @@
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  featured: boolean;
+  image: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  name: string;
+  price: number;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  category: string; // category slug
+  variants: ProductVariant[];
+  hsCode: string;
+  images: string[]; // image IDs from placeholder-images.json
+  featured: boolean;
+}
+
+export interface CartItem {
+  productId: string;
+  variantId: string;
+  quantity: number;
+  price: number;
+  name: string;
+  variantName: string;
+  image: string;
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  items: CartItem[];
+  total: number;
+  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered';
+  shippingAddress: any;
+  createdAt: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'User' | 'Admin';
+}

@@ -1,0 +1,122 @@
+import type { Category, Product } from './types';
+
+export const categories: Category[] = [
+  { id: '1', name: 'Pulses', slug: 'pulses', featured: true, image: 'category-pulses' },
+  { id: '2', name: 'Dairy', slug: 'dairy', featured: true, image: 'category-dairy' },
+  { id: '3', name: 'Fruits', slug: 'fruits', featured: true, image: 'category-fruits' },
+  { id: '4', name: 'Vegetables', slug: 'vegetables', featured: true, image: 'category-vegetables' },
+  { id: '5', name: 'Poultry', slug: 'poultry', featured: false, image: 'category-poultry' },
+];
+
+export const products: Product[] = [
+  {
+    id: '1',
+    name: 'Yellow Maize',
+    slug: 'yellow-maize',
+    description: 'High-quality yellow maize, ideal for animal feed and human consumption. Sourced from the best farms.',
+    category: 'pulses',
+    variants: [
+      { id: 'v1-1', name: 'Feed Grade', price: 250 },
+      { id: 'v1-2', name: 'Food Grade', price: 300 },
+    ],
+    hsCode: '1005.90.00',
+    images: ['yellow-maize-1'],
+    featured: true,
+  },
+  {
+    id: '2',
+    name: 'Red Onion',
+    slug: 'red-onion',
+    description: 'Fresh and pungent red onions, perfect for a variety of culinary uses. Export quality assured.',
+    category: 'vegetables',
+    variants: [
+      { id: 'v2-1', name: '55mm+', price: 150 },
+      { id: 'v2-2', name: '45-55mm', price: 130 },
+    ],
+    hsCode: '0703.10.19',
+    images: ['red-onion-1'],
+    featured: true,
+  },
+  {
+    id: '3',
+    name: 'Chickpeas (Chana)',
+    slug: 'chickpeas-chana',
+    description: 'Nutritious and versatile chickpeas, also known as chana. Available in various sizes.',
+    category: 'pulses',
+    variants: [
+      { id: 'v3-1', name: 'Kabuli Chana', price: 400 },
+      { id: 'v3-2', name: 'Desi Chana', price: 350 },
+    ],
+    hsCode: '0713.20.20',
+    images: ['chickpeas-1'],
+    featured: false,
+  },
+  {
+    id: '4',
+    name: 'Fresh Cow Milk',
+    slug: 'fresh-cow-milk',
+    description: 'Pure and fresh cow milk, pasteurized and ready for consumption. Rich in calcium and vitamins.',
+    category: 'dairy',
+    variants: [
+      { id: 'v4-1', name: 'Full Cream', price: 60 },
+      { id: 'v4-2', name: 'Skimmed', price: 55 },
+    ],
+    hsCode: '0401.20.00',
+    images: ['cow-milk-1'],
+    featured: true,
+  },
+  {
+    id: '5',
+    name: 'Desi Eggs',
+    slug: 'desi-eggs',
+    description: 'Farm-fresh desi eggs with rich, yellow yolks. Sourced from free-range hens.',
+    category: 'poultry',
+    variants: [
+      { id: 'v5-1', name: 'Dozen', price: 120 },
+      { id: 'v5-2', name: 'Half Dozen', price: 65 },
+    ],
+    hsCode: '0407.29.00',
+    images: ['desi-eggs-1'],
+    featured: false,
+  },
+  {
+    id: '6',
+    name: 'Alphonso Mangoes',
+    slug: 'alphonso-mangoes',
+    description: 'The king of fruits, sweet and aromatic Alphonso mangoes from the heart of India.',
+    category: 'fruits',
+    variants: [
+      { id: 'v6-1', name: 'Per Dozen', price: 800 },
+    ],
+    hsCode: '0804.50.20',
+    images: ['mangoes-1'],
+    featured: true,
+  },
+  {
+    id: '7',
+    name: 'Day-Old Chicks',
+    slug: 'day-old-chicks',
+    description: 'Healthy and vaccinated day-old chicks for poultry farming.',
+    category: 'poultry',
+    variants: [
+      { id: 'v7-1', name: 'Broiler', price: 40 },
+      { id: 'v7-2', name: 'Layer', price: 35 },
+    ],
+    hsCode: '0105.11.00',
+    images: ['chicks-1'],
+    featured: false,
+  },
+    {
+    id: '8',
+    name: 'White Maize',
+    slug: 'white-maize',
+    description: 'Premium white maize, perfect for making flour and other food products.',
+    category: 'pulses',
+    variants: [
+      { id: 'v8-1', name: 'Food Grade', price: 320 },
+    ],
+    hsCode: '1005.90.10',
+    images: ['white-maize-1'],
+    featured: true,
+  },
+];
