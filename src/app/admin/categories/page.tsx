@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -21,11 +21,11 @@ import {
 } from "@/components/ui/alert-dialog"
 
 const initialCategories = [
-  { id: '1', name: 'Pulses', status: 'active', featured: true },
-  { id: '2', name: 'Dairy', status: 'active', featured: true },
-  { id: '3', name: 'Fruits', status: 'active', featured: false },
-  { id: '4', name: 'Vegetables', status: 'inactive', featured: true },
-  { id: '5', name: 'Poultry', status: 'active', featured: false },
+  { id: '1', name: 'Pulses', slug: 'pulses', status: 'active', featured: true },
+  { id: '2', name: 'Dairy', slug: 'dairy', status: 'active', featured: true },
+  { id: '3', name: 'Fruits', slug: 'fruits', status: 'active', featured: false },
+  { id: '4', name: 'Vegetables', slug: 'vegetables', status: 'inactive', featured: true },
+  { id: '5', name: 'Poultry', slug: 'poultry', status: 'active', featured: false },
 ];
 
 export default function AdminCategoriesPage() {
@@ -72,6 +72,12 @@ export default function AdminCategoriesPage() {
                   <TableCell>{category.featured ? 'Yes' : 'No'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                       <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/products?category=${category.slug}`} target="_blank">
+                          <Eye className="h-4 w-4" />
+                          <span className="sr-only">View</span>
+                        </Link>
+                      </Button>
                       <Button variant="ghost" size="icon" asChild>
                         <Link href={`/admin/categories/edit/${category.id}`}>
                           <Pencil className="h-4 w-4" />
@@ -91,7 +97,7 @@ export default function AdminCategoriesPage() {
                             <AlertDialogDescription>
                               This action cannot be undone. This will permanently delete the
                               category "{category.name}".
-                            </AlertDialogDescription>
+                            </"AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
