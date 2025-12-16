@@ -7,6 +7,9 @@ import {
   MoreHorizontal,
   PlusCircle,
   Search,
+  Pencil,
+  Trash2,
+  Eye,
 } from 'lucide-react';
 import {
   Card,
@@ -35,15 +38,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Input } from '@/components/ui/input';
 
-const mockProducts = [
+const initialProducts = [
   { id: '1', name: 'Yellow Maize', status: 'active', price: 250, category: 'Pulses' },
   { id: '2', name: 'Red Onion', status: 'active', price: 150, category: 'Vegetables' },
   { id: '3', name: 'Chickpeas (Chana)', status: 'inactive', price: 400, category: 'Pulses' },
@@ -53,6 +60,12 @@ const mockProducts = [
 ];
 
 export default function AdminProductsPage() {
+    const [products, setProducts] = React.useState(initialProducts);
+
+    const handleDelete = (productId: string) => {
+        setProducts(products.filter(product => product.id !== productId));
+    };
+
   return (
     <>
       <div className="flex items-center justify-between gap-4 mb-6">
@@ -97,13 +110,11 @@ export default function AdminProductsPage() {
                     <TableHead>Category</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Price</TableHead>
-                    <TableHead>
-                      <span className="sr-only">Actions</span>
-                    </TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockProducts.map((product) => (
+                  {products.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell className="font-medium">{product.name}</TableCell>
                        <TableCell>{product.category}</TableCell>
@@ -114,21 +125,43 @@ export default function AdminProductsPage() {
                       </TableCell>
                       <TableCell className="text-right">₹{product.price.toFixed(2)}</TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/admin/products/edit/${product.id}`}>Edit</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>Delete</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex items-center justify-end gap-2">
+                           <Button variant="ghost" size="icon" asChild>
+                            <Link href={`/admin/products/edit/${product.id}`}>
+                              <Eye className="h-4 w-4" />
+                              <span className="sr-only">View</span>
+                            </Link>
+                          </Button>
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link href={`/admin/products/edit/${product.id}`}>
+                              <Pencil className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Link>
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete the
+                                  product "{product.name}".
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(product.id)}>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
