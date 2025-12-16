@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,7 +33,6 @@ const formSchema = z.object({
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { login } = useAuth();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -47,19 +45,13 @@ export default function RegisterPage() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Mock registration and login
-    const user = {
-      id: String(Date.now()),
-      name: values.name,
-      email: values.email,
-      role: 'User' as const,
-    };
-    login(user);
+    // Mock registration
+    console.log('New user registered:', values.email);
     toast({
       title: '✅ Account created successfully',
-      description: `Welcome, ${user.name}! You are now logged in.`,
+      description: `Welcome, ${values.name}! Please log in to continue.`,
     });
-    router.push('/profile');
+    router.push('/login');
   }
 
   return (

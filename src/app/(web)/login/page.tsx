@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,6 +33,7 @@ const formSchema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const { toast } = useToast();
 
@@ -57,7 +58,8 @@ export default function LoginPage() {
       title: '✅ User logged in successfully',
       description: `Welcome back, ${user.name}!`,
     });
-    router.push('/profile');
+    const redirectUrl = searchParams.get('redirect') || '/';
+    router.push(redirectUrl);
   }
 
   return (
