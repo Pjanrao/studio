@@ -40,7 +40,7 @@ export function CustomerDetailsModal({ customer, isOpen, onClose }: CustomerDeta
             </div>
              <div className="space-y-2">
                 <h3 className="font-semibold">Role</h3>
-                <p><Badge variant={customer.role === 'Admin' ? 'destructive' : 'secondary'}>{customer.role}</Badge></p>
+                <div><Badge variant={customer.role === 'Admin' ? 'destructive' : 'secondary'}>{customer.role}</Badge></div>
             </div>
         </div>
         <Separator />
