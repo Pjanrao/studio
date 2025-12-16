@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Users,
 } from 'lucide-react';
+import React from 'react';
 
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
@@ -30,11 +31,16 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
 
-  if (!user || user.role !== 'Admin') {
-    router.replace('/admin/login');
-    return null;
-  }
+  React.useEffect(() => {
+    if (!user || user.role !== 'Admin') {
+      router.replace('/admin/login');
+    }
+  }, [user, router]);
   
+  if (!user || user.role !== 'Admin') {
+    return null; // or a loading spinner
+  }
+
   const handleLogout = () => {
     logout();
     router.push('/admin/login');
