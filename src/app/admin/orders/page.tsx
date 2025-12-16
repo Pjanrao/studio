@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { ListFilter, MoreHorizontal, Search, File } from 'lucide-react';
+import { ListFilter, MoreHorizontal, Search, File, Calendar as CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { DateRange } from 'react-day-picker';
-import { addDays, format } from 'date-fns';
+import { addDays, format, isAfter, isBefore } from 'date-fns';
 
 type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
 
@@ -102,6 +102,7 @@ const getStatusVariant = (status: OrderStatus) => {
       case 'Shipped': return 'secondary';
       case 'Processing': return 'outline';
       case 'Pending': return 'destructive';
+      case 'Cancelled': return 'destructive';
       default: return 'outline';
     }
 };
@@ -109,10 +110,15 @@ const getStatusVariant = (status: OrderStatus) => {
 export default function AdminOrdersPage() {
   const [orders, setOrders] = React.useState(mockOrders);
   const [selectedOrder, setSelectedOrder] = React.useState<Order | null>(null);
+  const [search, setSearch] = React.useState('');
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: new Date(2023, 10, 20),
-    to: addDays(new Date(2023, 10, 20), 4),
-  })
+    from: undefined,
+    to: undefined,
+  });
+  const [statusFilter, setStatusFilter] = React.useState<string[]>([]);
+  const [paymentStatusFilter, setPaymentStatusFilter] = React.useState<string[]>([]);
+  const [paymentMethodFilter, setPaymentMethodFilter] = React.useState<string[]>([]);
+
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
     setOrders(prevOrders => 
@@ -121,6 +127,53 @@ export default function AdminOrdersPage() {
         )
     );
   };
+
+  const filteredOrders = React.useMemo(() => {
+    return orders.filter(order => {
+        const orderDate = new Date(order.date);
+        const dateMatch = (!date?.from || isAfter(orderDate, date.from)) && (!date?.to || isBefore(orderDate, addDays(date.to, 1)));
+        const searchMatch = order.id.toLowerCase().includes(search.toLowerCase()) || order.customer.name.toLowerCase().includes(search.toLowerCase());
+        const statusMatch = statusFilter.length === 0 || statusFilter.includes(order.status);
+        const paymentStatusMatch = paymentStatusFilter.length === 0 || paymentStatusFilter.includes(order.paymentStatus);
+        const paymentMethodMatch = paymentMethodFilter.length === 0 || paymentMethodFilter.includes(order.paymentMethod);
+        
+        return dateMatch && searchMatch && statusMatch && paymentStatusMatch && paymentMethodMatch;
+    });
+  }, [orders, search, date, statusFilter, paymentStatusFilter, paymentMethodFilter]);
+
+  const handleFilterChange = (filter: 'status' | 'paymentStatus' | 'paymentMethod', value: string) => {
+      const updater = {
+          status: setStatusFilter,
+          paymentStatus: setPaymentStatusFilter,
+          paymentMethod: setPaymentMethodFilter
+      }[filter];
+
+      updater(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
+  }
+
+  const exportToCsv = () => {
+    const headers = ['Order ID', 'Customer', 'Date', 'Status', 'Total', 'Payment Method', 'Payment Status'];
+    const rows = filteredOrders.map(order => [
+        order.id,
+        order.customer.name,
+        order.date,
+        order.status,
+        order.total.toFixed(2),
+        order.paymentMethod,
+        order.paymentStatus
+    ].join(','));
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+        + [headers.join(','), ...rows].join('\n');
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "orders.csv");
+    document.body.appendChild(link); 
+    link.click();
+    document.body.removeChild(link);
+  }
 
   return (
     <>
@@ -133,18 +186,19 @@ export default function AdminOrdersPage() {
           <CardDescription>View and manage all customer orders.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
               <div className="relative flex-1 md:grow-0">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input type="search" placeholder="Search orders..." className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]" />
+                  <Input type="search" placeholder="Search orders..." className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]" value={search} onChange={e => setSearch(e.target.value)} />
               </div>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     id="date"
                     variant={"outline"}
-                    className="w-[300px] justify-start text-left font-normal"
+                    className="w-[260px] justify-start text-left font-normal"
                   >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
                     {date?.from ? (
                       date.to ? (
                         <>
@@ -155,7 +209,7 @@ export default function AdminOrdersPage() {
                         format(date.from, "LLL dd, y")
                       )
                     ) : (
-                      <span>Pick a date</span>
+                      <span>Pick a date range</span>
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -182,16 +236,24 @@ export default function AdminOrdersPage() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Filter by</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuCheckboxItem checked>
-                    Status
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem>Payment Status</DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem>
-                    Payment Method
-                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Pending')} onCheckedChange={() => handleFilterChange('status', 'Pending')}>Pending</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Processing')} onCheckedChange={() => handleFilterChange('status', 'Processing')}>Processing</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Shipped')} onCheckedChange={() => handleFilterChange('status', 'Shipped')}>Shipped</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Delivered')} onCheckedChange={() => handleFilterChange('status', 'Delivered')}>Delivered</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Cancelled')} onCheckedChange={() => handleFilterChange('status', 'Cancelled')}>Cancelled</DropdownMenuCheckboxItem>
+                   <DropdownMenuSeparator />
+                   <DropdownMenuLabel>Payment Status</DropdownMenuLabel>
+                   <DropdownMenuSeparator />
+                   <DropdownMenuCheckboxItem checked={paymentStatusFilter.includes('Paid')} onCheckedChange={() => handleFilterChange('paymentStatus', 'Paid')}>Paid</DropdownMenuCheckboxItem>
+                   <DropdownMenuCheckboxItem checked={paymentStatusFilter.includes('Pending')} onCheckedChange={() => handleFilterChange('paymentStatus', 'Pending')}>Pending</DropdownMenuCheckboxItem>
+                    <DropdownMenuSeparator />
+                   <DropdownMenuLabel>Payment Method</DropdownMenuLabel>
+                   <DropdownMenuSeparator />
+                   <DropdownMenuCheckboxItem checked={paymentMethodFilter.includes('Stripe')} onCheckedChange={() => handleFilterChange('paymentMethod', 'Stripe')}>Stripe</DropdownMenuCheckboxItem>
+                   <DropdownMenuCheckboxItem checked={paymentMethodFilter.includes('Razorpay')} onCheckedChange={() => handleFilterChange('paymentMethod', 'Razorpay')}>Razorpay</DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button size="sm" variant="outline" className="h-10 gap-1">
+              <Button size="sm" variant="outline" className="h-10 gap-1" onClick={exportToCsv}>
                   <File className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Export
@@ -212,11 +274,11 @@ export default function AdminOrdersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.customer.name}</TableCell>
-                  <TableCell>{order.date}</TableCell>
+                  <TableCell>{format(new Date(order.date), "dd MMM, yyyy")}</TableCell>
                   <TableCell>
                     {order.status === 'Delivered' || order.status === 'Cancelled' ? (
                         <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
