@@ -97,7 +97,7 @@ export default function AdminCategoriesPage() {
                             <AlertDialogDescription>
                               This action cannot be undone. This will permanently delete the
                               category "{category.name}".
-                            </"AlertDialogDescription>
+                            </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
