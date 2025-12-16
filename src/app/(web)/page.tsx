@@ -38,13 +38,13 @@ export default function HomePage() {
         )}
         <div className="relative z-20 flex h-full flex-col items-center justify-center text-center">
           <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tight">
-            Riva Agro Exports
+            Freshness Delivered, Globally.
           </h1>
           <p className="mt-4 max-w-2xl text-lg md:text-xl">
-            Delivering the finest quality agricultural products from our farms to the world.
+            Sourcing the highest quality agricultural products for you.
           </p>
-          <Button asChild size="lg" className="mt-8 bg-accent text-accent-foreground hover:bg-accent/90">
-            <Link href="/products">Explore Our Products</Link>
+          <Button asChild size="lg" className="mt-8">
+            <Link href="/products">Shop Now</Link>
           </Button>
         </div>
       </section>
