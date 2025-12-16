@@ -49,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <p className="text-lg font-semibold">
           ₹{firstVariant.price.toFixed(2)}
         </p>
-        <Button size="icon" variant="outline" asChild>
+        <Button size="icon" asChild>
           <Link href={`/products/${product.slug}`}>
             <Eye className="h-4 w-4" />
           </Link>
