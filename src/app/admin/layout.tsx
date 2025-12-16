@@ -20,6 +20,8 @@ import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Logo } from '@/components/icons/logo';
@@ -108,11 +110,13 @@ export default function AdminLayout({
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col">
-              <div className="flex h-16 items-center border-b px-6">
-                 <Link href="/admin/dashboard">
-                   <Logo />
-                 </Link>
-              </div>
+              <SheetHeader className="h-16 flex-row items-center border-b px-6">
+                <SheetTitle>
+                  <Link href="/admin/dashboard">
+                    <Logo />
+                  </Link>
+                </SheetTitle>
+              </SheetHeader>
               {navLinks}
                <div className="mt-auto p-4">
                 <Button size="sm" className="w-full" onClick={handleLogout}>
