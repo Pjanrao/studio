@@ -8,8 +8,10 @@ import {
   LogOut,
   Package,
   PanelLeft,
+  Settings,
   ShoppingBag,
   Users,
+  LayoutGrid,
 } from 'lucide-react';
 import React from 'react';
 
@@ -37,7 +39,11 @@ export default function AdminLayout({
     }
   }, [user, router, pathname]);
   
-  if ((!user || user.role !== 'Admin') && pathname !== '/admin/login') {
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
+  if ((!user || user.role !== 'Admin')) {
     return null; // or a loading spinner
   }
 
@@ -48,15 +54,13 @@ export default function AdminLayout({
 
   const navItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
     { href: '/admin/products', label: 'Products', icon: Package },
+    { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+    { href: '/admin/categories', label: 'Categories', icon: LayoutGrid },
     { href: '/admin/customers', label: 'Customers', icon: Users },
+    { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
 
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
-  }
-  
   const navLinks = (
     <nav className="grid items-start gap-2 px-4 text-sm font-medium">
       {navItems.map((item) => (
@@ -64,7 +68,7 @@ export default function AdminLayout({
           key={item.label}
           href={item.href}
           className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-            pathname === item.href
+            pathname.startsWith(item.href)
               ? 'bg-primary text-primary-foreground'
               : 'text-muted-foreground hover:text-foreground'
           }`}
