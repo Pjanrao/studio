@@ -53,7 +53,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
              <div className="space-y-2">
                 <h3 className="font-semibold">Payment Details</h3>
                 <p>Method: {order.paymentMethod}</p>
-                <p>Status: <Badge variant={order.paymentStatus === 'Paid' ? 'default' : 'secondary'}>{order.paymentStatus}</Badge></p>
+                <div className="flex items-center gap-2">Status: <Badge variant={order.paymentStatus === 'Paid' ? 'default' : 'secondary'}>{order.paymentStatus}</Badge></div>
             </div>
         </div>
         <Separator />
