@@ -32,12 +32,12 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   React.useEffect(() => {
-    if (!user || user.role !== 'Admin') {
+    if ((!user || user.role !== 'Admin') && pathname !== '/admin/login') {
       router.replace('/admin/login');
     }
-  }, [user, router]);
+  }, [user, router, pathname]);
   
-  if (!user || user.role !== 'Admin') {
+  if ((!user || user.role !== 'Admin') && pathname !== '/admin/login') {
     return null; // or a loading spinner
   }
 
@@ -53,6 +53,10 @@ export default function AdminLayout({
     { href: '/admin/customers', label: 'Customers', icon: Users },
   ];
 
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+  
   const navLinks = (
     <nav className="grid items-start gap-2 px-4 text-sm font-medium">
       {navItems.map((item) => (
@@ -115,7 +119,7 @@ export default function AdminLayout({
             </SheetContent>
           </Sheet>
           <div className="flex-1">
-             <h1 className="text-lg font-semibold">{pathname.split('/').pop()?.replace('-', ' ')}</h1>
+             <h1 className="text-lg font-semibold capitalize">{pathname.split('/').pop()?.replace('-', ' ')}</h1>
           </div>
         </header>
         <main className="flex-1 p-6">{children}</main>
