@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { DateRange } from 'react-day-picker';
-import { addDays, format, isAfter, isBefore } from 'date-fns';
+import { addDays, format, isAfter, isBefore, parseISO } from 'date-fns';
 
 type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
 
@@ -130,8 +130,8 @@ export default function AdminOrdersPage() {
 
   const filteredOrders = React.useMemo(() => {
     return orders.filter(order => {
-        const orderDate = new Date(order.date);
-        const dateMatch = (!date?.from || isAfter(orderDate, date.from)) && (!date?.to || isBefore(orderDate, addDays(date.to, 1)));
+        const orderDate = parseISO(order.date);
+        const dateMatch = (!date?.from || isAfter(orderDate, date.from)) && (!date?.to || isBefore(orderDate, addDays(date.to, 0)));
         const searchMatch = order.id.toLowerCase().includes(search.toLowerCase()) || order.customer.name.toLowerCase().includes(search.toLowerCase());
         const statusMatch = statusFilter.length === 0 || statusFilter.includes(order.status);
         const paymentStatusMatch = paymentStatusFilter.length === 0 || paymentStatusFilter.includes(order.paymentStatus);
@@ -141,14 +141,8 @@ export default function AdminOrdersPage() {
     });
   }, [orders, search, date, statusFilter, paymentStatusFilter, paymentMethodFilter]);
 
-  const handleFilterChange = (filter: 'status' | 'paymentStatus' | 'paymentMethod', value: string) => {
-      const updater = {
-          status: setStatusFilter,
-          paymentStatus: setPaymentStatusFilter,
-          paymentMethod: setPaymentMethodFilter
-      }[filter];
-
-      updater(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
+  const handleFilterChange = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
+      setter(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
   }
 
   const exportToCsv = () => {
@@ -163,7 +157,7 @@ export default function AdminOrdersPage() {
         order.paymentStatus
     ].join(','));
 
-    const csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-t," 
         + [headers.join(','), ...rows].join('\n');
     
     const encodedUri = encodeURI(csvContent);
@@ -209,7 +203,7 @@ export default function AdminOrdersPage() {
                         format(date.from, "LLL dd, y")
                       )
                     ) : (
-                      <span>Pick a date range</span>
+                      <span>Filter by date</span>
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -236,21 +230,21 @@ export default function AdminOrdersPage() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Filter by</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Pending')} onCheckedChange={() => handleFilterChange('status', 'Pending')}>Pending</DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Processing')} onCheckedChange={() => handleFilterChange('status', 'Processing')}>Processing</DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Shipped')} onCheckedChange={() => handleFilterChange('status', 'Shipped')}>Shipped</DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Delivered')} onCheckedChange={() => handleFilterChange('status', 'Delivered')}>Delivered</DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Cancelled')} onCheckedChange={() => handleFilterChange('status', 'Cancelled')}>Cancelled</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Pending')} onCheckedChange={() => handleFilterChange(setStatusFilter, 'Pending')}>Pending</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Processing')} onCheckedChange={() => handleFilterChange(setStatusFilter, 'Processing')}>Processing</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Shipped')} onCheckedChange={() => handleFilterChange(setStatusFilter, 'Shipped')}>Shipped</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Delivered')} onCheckedChange={() => handleFilterChange(setStatusFilter, 'Delivered')}>Delivered</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={statusFilter.includes('Cancelled')} onCheckedChange={() => handleFilterChange(setStatusFilter, 'Cancelled')}>Cancelled</DropdownMenuCheckboxItem>
                    <DropdownMenuSeparator />
                    <DropdownMenuLabel>Payment Status</DropdownMenuLabel>
                    <DropdownMenuSeparator />
-                   <DropdownMenuCheckboxItem checked={paymentStatusFilter.includes('Paid')} onCheckedChange={() => handleFilterChange('paymentStatus', 'Paid')}>Paid</DropdownMenuCheckboxItem>
-                   <DropdownMenuCheckboxItem checked={paymentStatusFilter.includes('Pending')} onCheckedChange={() => handleFilterChange('paymentStatus', 'Pending')}>Pending</DropdownMenuCheckboxItem>
+                   <DropdownMenuCheckboxItem checked={paymentStatusFilter.includes('Paid')} onCheckedChange={() => handleFilterChange(setPaymentStatusFilter, 'Paid')}>Paid</DropdownMenuCheckboxItem>
+                   <DropdownMenuCheckboxItem checked={paymentStatusFilter.includes('Pending')} onCheckedChange={() => handleFilterChange(setPaymentStatusFilter, 'Pending')}>Pending</DropdownMenuCheckboxItem>
                     <DropdownMenuSeparator />
                    <DropdownMenuLabel>Payment Method</DropdownMenuLabel>
                    <DropdownMenuSeparator />
-                   <DropdownMenuCheckboxItem checked={paymentMethodFilter.includes('Stripe')} onCheckedChange={() => handleFilterChange('paymentMethod', 'Stripe')}>Stripe</DropdownMenuCheckboxItem>
-                   <DropdownMenuCheckboxItem checked={paymentMethodFilter.includes('Razorpay')} onCheckedChange={() => handleFilterChange('paymentMethod', 'Razorpay')}>Razorpay</DropdownMenuCheckboxItem>
+                   <DropdownMenuCheckboxItem checked={paymentMethodFilter.includes('Stripe')} onCheckedChange={() => handleFilterChange(setPaymentMethodFilter, 'Stripe')}>Stripe</DropdownMenuCheckboxItem>
+                   <DropdownMenuCheckboxItem checked={paymentMethodFilter.includes('Razorpay')} onCheckedChange={() => handleFilterChange(setPaymentMethodFilter, 'Razorpay')}>Razorpay</DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button size="sm" variant="outline" className="h-10 gap-1" onClick={exportToCsv}>
@@ -329,3 +323,5 @@ export default function AdminOrdersPage() {
     </>
   );
 }
+
+    
