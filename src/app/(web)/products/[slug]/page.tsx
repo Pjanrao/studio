@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ShoppingCart } from 'lucide-react';
+import { Eye, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { ProductRecommendations } from '@/components/product-recommendations';
 import { Separator } from '@/components/ui/separator';

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { Product } from '@/lib/types';
 import { Button } from './ui/button';
@@ -49,9 +49,9 @@ export function ProductCard({ product }: ProductCardProps) {
         <p className="text-lg font-semibold">
           ₹{firstVariant.price.toFixed(2)}
         </p>
-        <Button size="sm" asChild>
+        <Button size="icon" variant="outline" asChild>
           <Link href={`/products/${product.slug}`}>
-            <ShoppingCart className="mr-2 h-4 w-4" /> View
+            <Eye className="h-4 w-4" />
           </Link>
         </Button>
       </CardFooter>
