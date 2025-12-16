@@ -13,7 +13,7 @@ export default function ProductsPage() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category');
   
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategory ? [initialCategory] : []);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategory ? [initialCategory] : categories.map(c => c.slug));
   const maxPrice = useMemo(() => Math.max(...products.flatMap(p => p.variants.map(v => v.price))), []);
   const [priceRange, setPriceRange] = useState<[number]>([maxPrice]);
   const [showFeatured, setShowFeatured] = useState(false);
@@ -63,8 +63,8 @@ export default function ProductsPage() {
               <div>
                 <h3 className="font-semibold mb-4">Price Range</h3>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>$0</span>
-                  <span>${priceRange[0]}</span>
+                  <span>₹0</span>
+                  <span>₹{priceRange[0]}</span>
                 </div>
                 <Slider
                   defaultValue={[maxPrice]}

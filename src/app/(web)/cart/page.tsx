@@ -63,7 +63,7 @@ export default function CartPage() {
                       <TableCell>
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-muted-foreground">{item.variantName}</p>
-                        <p className="text-sm">${item.price.toFixed(2)}</p>
+                        <p className="text-sm">₹{item.price.toFixed(2)}</p>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export default function CartPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ₹{(item.price * item.quantity).toFixed(2)}
                       </TableCell>
                        <TableCell className="text-right">
                          <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.variantId)}>
@@ -110,15 +110,15 @@ export default function CartPage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>${cartTotal.toFixed(2)}</span>
+                <span>₹{cartTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
-                <span>$0.00</span>
+                <span>₹0.00</span>
               </div>
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
-                <span>${cartTotal.toFixed(2)}</span>
+                <span>₹{cartTotal.toFixed(2)}</span>
               </div>
             </CardContent>
             <CardFooter>

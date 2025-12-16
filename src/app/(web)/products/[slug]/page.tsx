@@ -16,6 +16,7 @@ import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { ProductRecommendations } from '@/components/product-recommendations';
 import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 
 type ProductPageProps = {
   params: {
@@ -62,7 +63,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             {product.name}
           </h1>
           <p className="mt-4 text-2xl font-semibold">
-            ${selectedVariant?.price.toFixed(2)}
+            ₹{selectedVariant?.price.toFixed(2)}
           </p>
           <Separator className="my-6" />
 

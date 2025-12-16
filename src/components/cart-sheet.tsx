@@ -85,7 +85,7 @@ export function CartSheet() {
                           </Button>
                         </div>
                         <p className="font-semibold">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ₹{(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -105,7 +105,7 @@ export function CartSheet() {
             <SheetFooter className="p-6 sm:justify-between">
               <div className="text-lg font-semibold">
                 <span>Total:</span>
-                <span> ${cartTotal.toFixed(2)}</span>
+                <span> ₹{cartTotal.toFixed(2)}</span>
               </div>
               <SheetClose asChild>
                 <Button asChild>
