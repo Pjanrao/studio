@@ -112,7 +112,7 @@ export default function CustomerDetailsPage() {
                         </div>
                         <div className="space-y-1">
                             <p className="text-muted-foreground">Role</p>
-                            <p><Badge variant={customer.role === 'Admin' ? 'destructive' : 'secondary'}>{customer.role}</Badge></p>
+                            <div><Badge variant={customer.role === 'Admin' ? 'destructive' : 'secondary'}>{customer.role}</Badge></div>
                         </div>
                     </CardContent>
                 </Card>
