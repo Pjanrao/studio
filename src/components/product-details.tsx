@@ -24,9 +24,7 @@ interface ProductDetailsProps {
 export function ProductDetails({ product }: ProductDetailsProps) {
   const { addToCart } = useCart();
 
-  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(
-    product?.variants[0]?.id
-  );
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>();
 
   const selectedVariant = product.variants.find(
     (v) => v.id === selectedVariantId
@@ -56,7 +54,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
             {product.name}
           </h1>
           <p className="mt-4 text-2xl font-semibold">
-            ₹{selectedVariant?.price.toFixed(2)}
+            {selectedVariant ? `₹${selectedVariant.price.toFixed(2)}` : 'Select a variant to see the price'}
           </p>
           <Separator className="my-6" />
 
