@@ -1,10 +1,10 @@
+
 'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  MoreHorizontal,
   PlusCircle,
   Search,
   Pencil,
@@ -51,10 +51,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/types';
+import { ProductDetailsModal } from '@/components/admin/product-details-modal';
 
 export default function AdminProductsPage() {
     const [products, setProducts] = React.useState<Product[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
+    const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
     const { toast } = useToast();
 
     const fetchProducts = React.useCallback(async () => {
@@ -152,13 +154,13 @@ export default function AdminProductsPage() {
               </div>
             </div>
             <TabsContent value="all">
-              <ProductTable products={filteredProducts} isLoading={isLoading} handleDelete={handleDelete} />
+              <ProductTable products={filteredProducts} isLoading={isLoading} handleDelete={handleDelete} onView={(product) => setSelectedProduct(product)} />
             </TabsContent>
              <TabsContent value="active">
-              <ProductTable products={filteredProducts} isLoading={isLoading} handleDelete={handleDelete} />
+              <ProductTable products={filteredProducts} isLoading={isLoading} handleDelete={handleDelete} onView={(product) => setSelectedProduct(product)} />
             </TabsContent>
              <TabsContent value="inactive">
-              <ProductTable products={filteredProducts} isLoading={isLoading} handleDelete={handleDelete} />
+              <ProductTable products={filteredProducts} isLoading={isLoading} handleDelete={handleDelete} onView={(product) => setSelectedProduct(product)} />
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -181,12 +183,19 @@ export default function AdminProductsPage() {
             </Pagination>
         </CardContent>
       </Card>
+      {selectedProduct && (
+        <ProductDetailsModal
+            product={selectedProduct}
+            isOpen={!!selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+        />
+      )}
     </>
   );
 }
 
 
-function ProductTable({ products, isLoading, handleDelete }: { products: Product[], isLoading: boolean, handleDelete: (id: string) => void }) {
+function ProductTable({ products, isLoading, handleDelete, onView }: { products: Product[], isLoading: boolean, handleDelete: (id: string) => void, onView: (product: Product) => void }) {
   if (isLoading) {
     return <div className="text-center py-8">Loading products...</div>;
   }
@@ -229,12 +238,10 @@ function ProductTable({ products, isLoading, handleDelete }: { products: Product
             <TableCell className="text-right">₹{product.variants[0]?.price.toFixed(2)}</TableCell>
             <TableCell className="text-right">
               <div className="flex items-center justify-end gap-2">
-                  <Button variant="ghost" size="icon" asChild>
-                  <Link href={`/admin/products/edit/${product.id}?readOnly=true`}>
+                  <Button variant="ghost" size="icon" onClick={() => onView(product)}>
                     <Eye className="h-4 w-4" />
                     <span className="sr-only">View</span>
-                  </Link>
-                </Button>
+                  </Button>
                 <Button variant="ghost" size="icon" asChild>
                   <Link href={`/admin/products/edit/${product.id}`}>
                     <Pencil className="h-4 w-4" />

@@ -21,10 +21,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import type { Category } from '@/lib/types';
+import { CategoryDetailsModal } from '@/components/admin/category-details-modal';
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = React.useState<Category[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -109,12 +111,10 @@ export default function AdminCategoriesPage() {
                   <TableCell>{category.featured ? 'Yes' : 'No'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                       <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/categories/edit/${category.id}?readOnly=true`}>
+                       <Button variant="ghost" size="icon" onClick={() => setSelectedCategory(category)}>
                           <Eye className="h-4 w-4" />
                           <span className="sr-only">View</span>
-                        </Link>
-                      </Button>
+                       </Button>
                       <Button variant="ghost" size="icon" asChild>
                         <Link href={`/admin/categories/edit/${category.id}`}>
                           <Pencil className="h-4 w-4" />
@@ -152,6 +152,13 @@ export default function AdminCategoriesPage() {
           </Table>
         </CardContent>
       </Card>
+      {selectedCategory && (
+        <CategoryDetailsModal
+            category={selectedCategory}
+            isOpen={!!selectedCategory}
+            onClose={() => setSelectedCategory(null)}
+        />
+      )}
     </>
   );
 }
