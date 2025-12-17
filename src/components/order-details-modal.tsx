@@ -42,7 +42,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
             </div>
              <div className="space-y-2">
                 <h3 className="font-semibold">Order Status</h3>
-                <p><Badge>{order.status}</Badge></p>
+                <div><Badge>{order.status}</Badge></div>
             </div>
         </div>
         <Separator />
