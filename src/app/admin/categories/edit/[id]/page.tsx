@@ -33,6 +33,7 @@ const formSchema = z.object({
 });
 
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
+  const [categoryId] = useState(params.id);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isReadOnly = searchParams.get('readOnly') === 'true';
@@ -55,9 +56,8 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
 
   useEffect(() => {
     const fetchCategory = async () => {
-      const { id } = params;
       try {
-        const response = await fetch(`/api/categories/${id}`);
+        const response = await fetch(`/api/categories/${categoryId}`);
         if (response.status === 404) {
             notFound();
             return;
@@ -82,13 +82,12 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
         setIsLoading(false);
       }
     };
-    if (params.id) {
+    if (categoryId) {
       fetchCategory();
     }
-  }, [params.id, toast, form]);
+  }, [categoryId, toast, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { id } = params;
     setIsSubmitting(true);
     const formData = new FormData();
     formData.append('name', values.name);
@@ -99,7 +98,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     }
 
     try {
-      const response = await fetch(`/api/categories/${id}`, {
+      const response = await fetch(`/api/categories/${categoryId}`, {
         method: 'PUT',
         body: formData,
       });
