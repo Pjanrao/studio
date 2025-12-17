@@ -35,8 +35,11 @@ const formSchema = z.object({
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isReadOnly = searchParams.get('readOnly') === 'true';
   const { toast } = useToast();
+  
+  const categoryId = params.id;
+  const isReadOnly = searchParams.get('readOnly') === 'true';
+
   const [category, setCategory] = useState<Category | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +57,6 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
   const imageRef = form.register("image");
 
   useEffect(() => {
-    const categoryId = params.id;
     if (!categoryId) return;
 
     const fetchCategory = async () => {
@@ -87,10 +89,9 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     
     fetchCategory();
     
-  }, [params, toast, form, notFound]);
+  }, [categoryId, toast, form, notFound]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const categoryId = params.id;
     if (!categoryId) return;
 
     setIsSubmitting(true);
