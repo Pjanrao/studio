@@ -19,11 +19,10 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { useRef } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Category name is required'),
-  image: z.any().refine(file => file instanceof File, 'Image is required.'),
+  image: z.any().refine((files) => files?.length === 1, 'Image is required.'),
   status: z.boolean().default(true),
   featured: z.boolean().default(false),
 });
@@ -31,7 +30,6 @@ const formSchema = z.object({
 export default function NewCategoryPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const imageRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,13 +39,15 @@ export default function NewCategoryPage() {
       featured: false,
     },
   });
+  
+  const imageRef = form.register("image");
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const formData = new FormData();
     formData.append('name', values.name);
     formData.append('featured', String(values.featured));
     formData.append('status', values.status ? 'active' : 'inactive');
-    formData.append('image', values.image);
+    formData.append('image', values.image[0]);
 
     try {
       const response = await fetch('/api/categories', {
@@ -130,19 +130,14 @@ export default function NewCategoryPage() {
                 <FormField
                   control={form.control}
                   name="image"
-                  render={({ field: { onChange, value, ...rest } }) => (
+                  render={({ field }) => (
                     <FormItem>
                        <FormControl>
                         <div className="border-dashed border-2 border-muted-foreground/50 rounded-lg p-10 text-center">
                             <Input 
                                 type="file" 
                                 accept="image/*" 
-                                onChange={(e) => {
-                                    if (e.target.files) {
-                                        onChange(e.target.files[0]);
-                                    }
-                                }}
-                                ref={imageRef}
+                                {...imageRef}
                             />
                         </div>
                        </FormControl>
@@ -168,6 +163,7 @@ export default function NewCategoryPage() {
                         <Label htmlFor="status">Active</Label>
                         <FormControl>
                             <Switch
+                                id="status"
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
                             />
@@ -184,7 +180,7 @@ export default function NewCategoryPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Featured Category</CardTitle>
-              </CardHeader>
+              </Header>
               <CardContent>
                 <FormField
                   control={form.control}
@@ -195,6 +191,7 @@ export default function NewCategoryPage() {
                             <Label htmlFor="featured">Featured</Label>
                              <FormControl>
                                 <Switch
+                                    id="featured"
                                     checked={field.value}
                                     onCheckedChange={field.onChange}
                                 />
