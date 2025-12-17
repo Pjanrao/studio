@@ -37,7 +37,6 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
   const searchParams = useSearchParams();
   const { toast } = useToast();
   
-  const categoryId = params.id;
   const isReadOnly = searchParams.get('readOnly') === 'true';
 
   const [category, setCategory] = useState<Category | null>(null);
@@ -57,6 +56,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
   const imageRef = form.register("image");
 
   useEffect(() => {
+    const categoryId = params.id;
     if (!categoryId) return;
 
     const fetchCategory = async () => {
@@ -89,9 +89,10 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     
     fetchCategory();
     
-  }, [categoryId, toast, form, notFound]);
+  }, [params.id, toast, form, notFound]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const categoryId = params.id;
     if (!categoryId) return;
 
     setIsSubmitting(true);
