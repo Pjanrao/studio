@@ -27,7 +27,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>();
 
   const selectedVariant = product.variants.find(
-    (v) => v.id === selectedVariantId
+    (v, index) => (v.id || String(index)) === selectedVariantId
   );
 
   const handleAddToCart = () => {
@@ -75,7 +75,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {product.variants.map((variant, index) => (
-                    <SelectItem key={`${product.id}-${variant.id || index}`} value={variant.id}>
+                    <SelectItem key={`${product.id}-${variant.id || index}`} value={variant.id || String(index)}>
                       {variant.name}
                     </SelectItem>
                   ))}
