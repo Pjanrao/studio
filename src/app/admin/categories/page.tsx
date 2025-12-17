@@ -18,21 +18,54 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-
-const initialCategories = [
-  { id: '1', name: 'Pulses', slug: 'pulses', status: 'active', featured: true },
-  { id: '2', name: 'Dairy', slug: 'dairy', status: 'active', featured: true },
-  { id: '3', name: 'Fruits', slug: 'fruits', status: 'active', featured: false },
-  { id: '4', name: 'Vegetables', slug: 'vegetables', status: 'inactive', featured: true },
-  { id: '5', name: 'Poultry', slug: 'poultry', status: 'active', featured: false },
-];
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
+import type { Category } from '@/lib/types';
 
 export default function AdminCategoriesPage() {
-  const [categories, setCategories] = React.useState(initialCategories);
+  const [categories, setCategories] = React.useState<Category[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const { toast } = useToast();
 
-  const handleDelete = (categoryId: string) => {
-    setCategories(categories.filter(category => category.id !== categoryId));
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to fetch categories.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCategories();
+  }, [toast]);
+
+  const handleDelete = async (categoryId: string) => {
+    try {
+      const response = await fetch(`/api/categories/${categoryId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete');
+      
+      setCategories(categories.filter(category => category.id !== categoryId));
+      toast({
+        title: '✅ Success',
+        description: 'Category has been deleted.',
+      });
+    } catch (error) {
+       toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to delete category.',
+      });
+    }
   };
 
   return (
@@ -61,7 +94,11 @@ export default function AdminCategoriesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {categories.map((category) => (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">Loading...</TableCell>
+                </TableRow>
+              ) : categories.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell>
@@ -118,3 +155,4 @@ export default function AdminCategoriesPage() {
     </>
   );
 }
+

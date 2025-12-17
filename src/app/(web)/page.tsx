@@ -1,7 +1,8 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Leaf, Truck, ShieldCheck } from 'lucide-react';
-import { products, categories } from '@/lib/data';
+import { products, categories as mockCategories } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,13 +14,26 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { ProductCard } from '@/components/product-card';
+import { getCategories } from '@/lib/models/Category';
+import type { Category } from '@/lib/types';
 
-export default function HomePage() {
+async function getFeaturedCategories() {
+  try {
+    const allCategories = await getCategories();
+    return allCategories.filter(c => c.featured && c.status === 'active');
+  } catch (error) {
+    console.error("Failed to fetch categories, falling back to mock data.", error);
+    return mockCategories.filter(c => c.featured);
+  }
+}
+
+
+export default async function HomePage() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-banner');
   const aboutImage = PlaceHolderImages.find((img) => img.id === 'about-us-image');
 
   const featuredProducts = products.filter((p) => p.featured);
-  const featuredCategories = categories.filter((c) => c.featured);
+  const featuredCategories: (Category | (typeof mockCategories[0]))[] = await getFeaturedCategories();
 
   return (
     <div className="flex flex-col">
@@ -57,9 +71,9 @@ export default function HomePage() {
           </h2>
           <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-4">
             {featuredCategories.map((category) => {
-              const categoryImage = PlaceHolderImages.find(
-                (img) => img.id === category.image
-              );
+              const isMockCategory = !('_id' in category);
+              const categoryImage = isMockCategory ? PlaceHolderImages.find((img) => img.id === category.image) : { imageUrl: category.image, imageHint: category.name };
+
               return (
                 <Link key={category.id} href={`/products?category=${category.slug}`} className="group">
                   <Card className="overflow-hidden transition-all group-hover:shadow-xl group-hover:-translate-y-1">
@@ -70,6 +84,7 @@ export default function HomePage() {
                         fill
                         className="object-cover transition-transform group-hover:scale-105"
                         data-ai-hint={categoryImage?.imageHint}
+                        unoptimized={!isMockCategory}
                       />
                     </div>
                     <CardContent className="p-4">

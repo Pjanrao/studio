@@ -1,11 +1,13 @@
 import { ObjectId } from 'mongodb';
 
 export interface Category {
+  _id?: ObjectId;
   id: string;
   name: string;
   slug: string;
   featured: boolean;
   image: string;
+  status: 'active' | 'inactive';
 }
 
 export interface ProductVariant {
