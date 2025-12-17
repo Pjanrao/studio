@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, notFound } from 'next/navigation';
+import { useRouter, notFound, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,6 +35,8 @@ const formSchema = z.object({
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
   const { id } = params;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isReadOnly = searchParams.get('readOnly') === 'true';
   const { toast } = useToast();
   const [category, setCategory] = useState<Category | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +49,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
       status: true,
       featured: false,
     },
+    disabled: isReadOnly,
   });
 
   const imageRef = form.register("image");
@@ -79,7 +82,9 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
         setIsLoading(false);
       }
     };
-    fetchCategory();
+    if (id) {
+      fetchCategory();
+    }
   }, [id, toast, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -152,6 +157,8 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
   if (!category) {
     return notFound();
   }
+  
+  const pageTitle = isReadOnly ? `View Category: ${category.name}` : `Edit Category: ${category.name}`;
 
   return (
     <Form {...form}>
@@ -164,16 +171,18 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
             </Link>
           </Button>
           <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-            Edit Category: {category.name}
+            {pageTitle}
           </h1>
-          <div className="hidden items-center gap-2 md:ml-auto md:flex">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/admin/categories">Cancel</Link>
-            </Button>
-            <Button size="sm" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
+          {!isReadOnly && (
+            <div className="hidden items-center gap-2 md:ml-auto md:flex">
+                <Button variant="outline" size="sm" asChild>
+                <Link href="/admin/categories">Cancel</Link>
+                </Button>
+                <Button size="sm" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                </Button>
+            </div>
+          )}
         </div>
         <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
           <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
@@ -181,7 +190,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
               <CardHeader>
                 <CardTitle>Category Details</CardTitle>
                 <CardDescription>
-                  Update the details of the category.
+                  {isReadOnly ? 'Details for this category.' : 'Update the details of the category.'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -203,7 +212,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
            <Card>
             <CardHeader>
                 <CardTitle>Category Image</CardTitle>
-                <CardDescription>Upload a new image to replace the current one.</CardDescription>
+                <CardDescription>{isReadOnly ? 'Current category image.' : 'Upload a new image to replace the current one.'}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                  {category.image && (
@@ -211,7 +220,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
                         <Image src={category.image} alt={category.name} fill className="object-cover rounded-md" unoptimized/>
                     </div>
                 )}
-                 <FormField
+                 {!isReadOnly && <FormField
                   control={form.control}
                   name="image"
                   render={({ field }) => (
@@ -227,7 +236,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                />}
             </CardContent>
           </Card>
         </div>
@@ -249,6 +258,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
                                 id="status"
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
+                                disabled={isReadOnly}
                             />
                         </FormControl>
                       </div>
@@ -277,6 +287,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
                                     id="featured"
                                     checked={field.value}
                                     onCheckedChange={field.onChange}
+                                    disabled={isReadOnly}
                                 />
                             </FormControl>
                         </div>
@@ -290,14 +301,16 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
           </Card>
         </div>
       </div>
-      <div className="flex items-center justify-center gap-2 md:hidden mt-6">
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/admin/categories">Cancel</Link>
-        </Button>
-        <Button size="sm" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : 'Save Changes'}
-        </Button>
-      </div>
+      {!isReadOnly && (
+        <div className="flex items-center justify-center gap-2 md:hidden mt-6">
+            <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/categories">Cancel</Link>
+            </Button>
+            <Button size="sm" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
+            </Button>
+        </div>
+      )}
       </form>
     </Form>
   );

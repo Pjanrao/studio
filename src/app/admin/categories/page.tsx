@@ -110,7 +110,7 @@ export default function AdminCategoriesPage() {
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                        <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/categories/edit/${category.id}`}>
+                        <Link href={`/admin/categories/edit/${category.id}?readOnly=true`}>
                           <Eye className="h-4 w-4" />
                           <span className="sr-only">View</span>
                         </Link>
@@ -155,4 +155,3 @@ export default function AdminCategoriesPage() {
     </>
   );
 }
-

@@ -22,24 +22,39 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { categories } from '@/lib/data';
+import { categories, products } from '@/lib/data';
+import { notFound, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { Product } from '@/lib/types';
 
-// This is a mock product. In a real app, you would fetch this by ID.
-const mockProduct = {
-  id: '1',
-  name: 'Yellow Maize',
-  description: 'High-quality yellow maize, ideal for animal feed and human consumption. Sourced from the best farms.',
-  category: 'pulses',
-  variants: [
-    { name: 'Feed Grade', price: 250 },
-    { name: 'Food Grade', price: 300 },
-  ],
-  hsCode: '1005.90.00',
-  status: 'active',
-  featured: true,
-};
 
 export default function EditProductPage({ params }: { params: { id: string }}) {
+  const { id } = params;
+  const searchParams = useSearchParams();
+  const isReadOnly = searchParams.get('readOnly') === 'true';
+
+  const [product, setProduct] = useState<Product | undefined>(undefined);
+
+  useEffect(() => {
+    // In a real app, you would fetch this by ID from your API
+    const foundProduct = products.find(p => p.id === id);
+    setProduct(foundProduct);
+  }, [id]);
+
+
+  if (!product) {
+    // You can show a loading state here
+    if (typeof window !== 'undefined') {
+        // notFound() must be called in a client component that is not in loading state
+        // so we check if window is defined before calling it.
+        // A better approach would be a dedicated loading component
+        return notFound();
+    }
+    return null;
+  }
+  
+  const pageTitle = isReadOnly ? `View Product: ${product.name}` : `Edit Product: ${product.name}`;
+  
   return (
     <>
       <div className="flex items-center gap-4 mb-6">
@@ -50,14 +65,16 @@ export default function EditProductPage({ params }: { params: { id: string }}) {
             </Link>
         </Button>
         <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-          Edit Product: {mockProduct.name}
+          {pageTitle}
         </h1>
-        <div className="hidden items-center gap-2 md:ml-auto md:flex">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/products">Cancel</Link>
-          </Button>
-          <Button size="sm">Save Changes</Button>
-        </div>
+        {!isReadOnly && (
+          <div className="hidden items-center gap-2 md:ml-auto md:flex">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/products">Cancel</Link>
+            </Button>
+            <Button size="sm">Save Changes</Button>
+          </div>
+        )}
       </div>
       <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
         <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
@@ -65,19 +82,20 @@ export default function EditProductPage({ params }: { params: { id: string }}) {
             <CardHeader>
               <CardTitle>Product Details</CardTitle>
               <CardDescription>
-                Update the details of the product.
+                 {isReadOnly ? 'Details for this product.' : 'Update the details of the product.'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name</Label>
-                <Input id="name" defaultValue={mockProduct.name} />
+                <Input id="name" defaultValue={product.name} readOnly={isReadOnly} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  defaultValue={mockProduct.description}
+                  defaultValue={product.description}
+                   readOnly={isReadOnly}
                 />
               </div>
             </CardContent>
@@ -89,7 +107,7 @@ export default function EditProductPage({ params }: { params: { id: string }}) {
             <CardContent className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                <Select defaultValue={mockProduct.category}>
+                <Select defaultValue={product.category} disabled={isReadOnly}>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -102,19 +120,19 @@ export default function EditProductPage({ params }: { params: { id: string }}) {
               </div>
                <div className="space-y-2">
                 <Label htmlFor="hs-code">HS Code</Label>
-                <Input id="hs-code" defaultValue={mockProduct.hsCode} />
+                <Input id="hs-code" defaultValue={product.hsCode} readOnly={isReadOnly} />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>Variants</Label>
                 <Card className="p-4 space-y-4">
-                    {mockProduct.variants.map((variant, index) => (
+                    {product.variants.map((variant, index) => (
                          <div key={index} className="flex gap-4">
-                            <Input defaultValue={variant.name} />
-                            <Input type="number" defaultValue={variant.price} />
-                            <Button variant="outline">Remove</Button>
+                            <Input defaultValue={variant.name} readOnly={isReadOnly} />
+                            <Input type="number" defaultValue={variant.price} readOnly={isReadOnly} />
+                            {!isReadOnly && <Button variant="outline">Remove</Button>}
                         </div>
                     ))}
-                    <Button variant="outline" className="w-full">Add Variant</Button>
+                    {!isReadOnly && <Button variant="outline" className="w-full">Add Variant</Button>}
                 </Card>
               </div>
             </CardContent>
@@ -139,7 +157,7 @@ export default function EditProductPage({ params }: { params: { id: string }}) {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="status">Active</Label>
-                <Switch id="status" defaultChecked={mockProduct.status === 'active'} />
+                <Switch id="status" defaultChecked={product.status === 'active'} disabled={isReadOnly} />
               </div>
               <p className="text-sm text-muted-foreground">
                 Inactive products will not be visible on the website.
@@ -153,7 +171,7 @@ export default function EditProductPage({ params }: { params: { id: string }}) {
             <CardContent>
                <div className="flex items-center justify-between">
                 <Label htmlFor="featured">Featured</Label>
-                <Switch id="featured" defaultChecked={mockProduct.featured} />
+                <Switch id="featured" defaultChecked={product.featured} disabled={isReadOnly} />
               </div>
               <p className="text-sm text-muted-foreground mt-4">
                 Featured products will appear on the homepage slider.
@@ -162,12 +180,14 @@ export default function EditProductPage({ params }: { params: { id: string }}) {
           </Card>
         </div>
       </div>
-      <div className="flex items-center justify-center gap-2 md:hidden mt-6">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/products">Cancel</Link>
-          </Button>
-          <Button size="sm">Save Changes</Button>
-      </div>
+      {!isReadOnly && (
+        <div className="flex items-center justify-center gap-2 md:hidden mt-6">
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/products">Cancel</Link>
+            </Button>
+            <Button size="sm">Save Changes</Button>
+        </div>
+      )}
     </>
   );
 }
