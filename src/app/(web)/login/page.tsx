@@ -46,21 +46,35 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Mock login
-    const user = {
-      id: '1',
-      name: 'John Doe',
-      email: values.email,
-      role: 'User' as const,
-    };
-    login(user);
-    toast({
-      title: '✅ User logged in successfully',
-      description: `Welcome back, ${user.name}!`,
-    });
-    const redirectUrl = searchParams.get('redirect') || '/';
-    router.push(redirectUrl);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
+      const user = data.user;
+      login(user);
+      toast({
+        title: '✅ User logged in successfully',
+        description: `Welcome back, ${user.name}!`,
+      });
+      const redirectUrl = searchParams.get('redirect') || '/';
+      router.push(redirectUrl);
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message || 'Invalid email or password.',
+      });
+    }
   }
 
   return (
@@ -101,8 +115,8 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Login
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Logging in...' : 'Login'}
               </Button>
             </form>
           </Form>
