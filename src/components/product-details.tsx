@@ -76,8 +76,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {product.variants.map((variant) => (
-                    <SelectItem key={`${product.id}-${variant.id}`} value={variant.id}>
+                  {product.variants.map((variant, index) => (
+                    <SelectItem key={`${product.id}-${variant.id || index}`} value={variant.id}>
                       {variant.name}
                     </SelectItem>
                   ))}
