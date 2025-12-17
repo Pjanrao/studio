@@ -1,6 +1,7 @@
+
 'use client';
 
-import { DollarSign, ShoppingBag, Users } from 'lucide-react';
+import { DollarSign, ShoppingBag, Users, PackageCheck } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import type { Order } from '@/lib/types';
 type DashboardData = {
     totalRevenue: number;
     totalOrders: number;
+    totalDeliveredOrders: number;
     totalCustomers: number;
     chartData: { name: string; total: number }[];
     recentOrders: Order[];
@@ -21,7 +23,7 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ data }: DashboardClientProps) {
-  const { totalRevenue, totalOrders, totalCustomers, chartData, recentOrders } = data;
+  const { totalRevenue, totalOrders, totalDeliveredOrders, totalCustomers, chartData, recentOrders } = data;
   
   const getStatusVariant = (status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled') => {
     switch (status) {
@@ -37,7 +39,7 @@ export function DashboardClient({ data }: DashboardClientProps) {
   return (
     <div>
       <h1 className="text-3xl font-bold tracking-tight mb-6">Admin Dashboard</h1>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3 mb-8">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4 mb-8">
          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -56,6 +58,16 @@ export function DashboardClient({ data }: DashboardClientProps) {
             <CardContent>
               <div className="text-2xl font-bold">+{totalOrders}</div>
                <p className="text-xs text-muted-foreground">All-time orders</p>
+            </CardContent>
+          </Card>
+           <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Delivered</CardTitle>
+              <PackageCheck className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">+{totalDeliveredOrders}</div>
+              <p className="text-xs text-muted-foreground">Completed orders</p>
             </CardContent>
           </Card>
            <Card>

@@ -16,6 +16,7 @@ async function getDashboardData() {
             .reduce((sum, order) => sum + order.total, 0);
 
         const totalOrders = orders.length;
+        const totalDeliveredOrders = orders.filter(order => order.status === 'Delivered').length;
 
         const totalCustomers = users.filter(user => user.role === 'User').length;
         
@@ -39,6 +40,7 @@ async function getDashboardData() {
         return {
             totalRevenue,
             totalOrders,
+            totalDeliveredOrders,
             totalCustomers,
             chartData,
             recentOrders,
@@ -49,6 +51,7 @@ async function getDashboardData() {
         return {
             totalRevenue: 0,
             totalOrders: 0,
+            totalDeliveredOrders: 0,
             totalCustomers: 0,
             chartData: [],
             recentOrders: [],
