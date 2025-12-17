@@ -1,6 +1,7 @@
+
 "use client";
 
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -37,6 +38,7 @@ export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -56,15 +58,16 @@ export default function CheckoutPage() {
     },
   });
 
-  if (cartItems.length === 0 && !isSubmitting) {
-    router.replace('/cart');
-    return null;
-  }
+  useEffect(() => {
+    if (!user) {
+      router.replace('/login?redirect=/checkout');
+    } else if (cartItems.length === 0) {
+      router.replace('/cart');
+    } else {
+      setIsReady(true);
+    }
+  }, [user, cartItems, router]);
   
-  if (!user) {
-    router.replace('/login?redirect=/checkout');
-    return null;
-  }
   
   const handlePayment = async (shippingDetails: ShippingAddress) => {
     setIsSubmitting(true);
@@ -77,7 +80,7 @@ export default function CheckoutPage() {
       handler: async function (response: any) {
         try {
           const orderData: Omit<Order, 'id' | '_id' | 'createdAt'> = {
-            userId: user.id,
+            userId: user!.id,
             items: cartItems,
             total: cartTotal,
             status: 'Processing' as const,
@@ -115,8 +118,8 @@ export default function CheckoutPage() {
         }
       },
       prefill: {
-        name: user.name,
-        email: user.email,
+        name: user?.name,
+        email: user?.email,
       },
       theme: {
         color: "#166534"
@@ -136,6 +139,10 @@ export default function CheckoutPage() {
 
   function onSubmit(values: z.infer<typeof shippingSchema>) {
     handlePayment(values);
+  }
+
+  if (!isReady) {
+    return null; // or a loading spinner
   }
 
   return (
@@ -160,10 +167,10 @@ export default function CheckoutPage() {
                     <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField name="country" render={({ field }) => (
-                    <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormMessage>
                   )} />
                   <FormField name="zip" render={({ field }) => (
-                    <FormItem><FormLabel>ZIP Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>ZIP Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormMessage>
                   )} />
                 </div>
               </CardContent>
