@@ -33,7 +33,7 @@ const formSchema = z.object({
 });
 
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
-  const [categoryId] = useState(params.id);
+  const { id: categoryId } = params;
   const router = useRouter();
   const searchParams = useSearchParams();
   const isReadOnly = searchParams.get('readOnly') === 'true';
