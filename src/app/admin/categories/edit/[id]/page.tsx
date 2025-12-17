@@ -33,6 +33,7 @@ const formSchema = z.object({
 });
 
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const router = useRouter();
   const { toast } = useToast();
   const [category, setCategory] = useState<Category | null>(null);
@@ -53,7 +54,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const response = await fetch(`/api/categories/${params.id}`);
+        const response = await fetch(`/api/categories/${id}`);
         if (response.status === 404) {
             notFound();
             return;
@@ -79,7 +80,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
       }
     };
     fetchCategory();
-  }, [params.id, toast, form]);
+  }, [id, toast, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
@@ -92,7 +93,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     }
 
     try {
-      const response = await fetch(`/api/categories/${params.id}`, {
+      const response = await fetch(`/api/categories/${id}`, {
         method: 'PUT',
         body: formData,
       });
@@ -207,7 +208,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
             <CardContent className="space-y-4">
                  {category.image && (
                     <div className="relative w-32 h-32">
-                        <Image src={category.image} alt={category.name} fill className="object-cover rounded-md" />
+                        <Image src={category.image} alt={category.name} fill className="object-cover rounded-md" unoptimized/>
                     </div>
                 )}
                  <FormField
