@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -72,7 +73,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 onValueChange={setSelectedVariantId}
               >
                 <SelectTrigger id="variant" className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Select a variant" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {product.variants.map((variant) => (
