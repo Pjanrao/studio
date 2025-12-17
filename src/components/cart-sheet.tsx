@@ -17,15 +17,10 @@ import {
 import { useCart } from '@/hooks/use-cart';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from './ui/badge';
 
 export function CartSheet() {
   const { cartItems, cartCount, cartTotal, updateQuantity, removeFromCart } = useCart();
-  
-  const findImage = (id: string) => {
-    return PlaceHolderImages.find((img) => img.id === id)?.imageUrl || '';
-  };
 
   return (
     <Sheet>
@@ -55,7 +50,7 @@ export function CartSheet() {
                   <div key={item.variantId} className="flex items-start gap-4">
                     <div className="relative h-20 w-20 overflow-hidden rounded-md">
                       <Image
-                        src={findImage(item.image)}
+                        src={item.image}
                         alt={item.name}
                         fill
                         className="object-cover"

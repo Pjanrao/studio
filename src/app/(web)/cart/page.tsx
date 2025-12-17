@@ -7,14 +7,9 @@ import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function CartPage() {
   const { cartItems, cartCount, cartTotal, updateQuantity, removeFromCart } = useCart();
-
-  const findImage = (id: string) => {
-    return PlaceHolderImages.find((img) => img.id === id)?.imageUrl || '';
-  };
 
   if (cartCount === 0) {
     return (
@@ -53,7 +48,7 @@ export default function CartPage() {
                     <TableRow key={item.variantId}>
                       <TableCell>
                         <Image
-                          src={findImage(item.image)}
+                          src={item.image}
                           alt={item.name}
                           width={80}
                           height={80}

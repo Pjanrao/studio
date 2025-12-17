@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 
 interface ProductImageGalleryProps {
@@ -13,9 +12,11 @@ interface ProductImageGalleryProps {
 export function ProductImageGallery({ imageIds, productName }: ProductImageGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(imageIds[0]);
 
-  const images = imageIds.map(id => PlaceHolderImages.find(img => img.id === id)).filter(Boolean);
+  const images = imageIds.map(id => ({ id, url: id })).filter(Boolean);
 
   if (!images.length) return null;
+  
+  const selectedImageUrl = images.find(img => img.id === selectedImage)?.url || images[0]?.url || '';
 
   return (
     <div className="flex flex-col-reverse md:flex-row gap-4">
@@ -30,12 +31,11 @@ export function ProductImageGallery({ imageIds, productName }: ProductImageGalle
             )}
           >
             <Image
-              src={image.imageUrl}
+              src={image.url}
               alt={`${productName} thumbnail`}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 10vw, 5vw"
-              unoptimized
             />
           </button>
         ))}
@@ -43,13 +43,12 @@ export function ProductImageGallery({ imageIds, productName }: ProductImageGalle
       <div className="flex-1">
         <div className="relative aspect-square w-full overflow-hidden rounded-lg shadow-md">
           <Image
-            src={PlaceHolderImages.find(img => img.id === selectedImage)?.imageUrl || ''}
+            src={selectedImageUrl}
             alt={productName}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 80vw, 40vw"
             priority
-            unoptimized
           />
         </div>
       </div>

@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Eye } from 'lucide-react';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { Product } from '@/lib/types';
 import { Button } from './ui/button';
 import {
@@ -17,9 +16,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const imageUrl =
-    PlaceHolderImages.find((img) => img.id === product.images[0])?.imageUrl ||
-    '';
+  const imageUrl = product.images[0] || 'https://picsum.photos/seed/placeholder/400/300';
   const firstVariant = product.variants[0];
 
   return (
@@ -33,7 +30,6 @@ export function ProductCard({ product }: ProductCardProps) {
               fill
               className="object-cover"
               data-ai-hint="product image"
-              unoptimized
             />
           </div>
         </Link>

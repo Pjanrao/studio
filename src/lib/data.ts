@@ -1,11 +1,11 @@
 import type { Category, Product } from './types';
 
-export const categories: Category[] = [
-  { id: '1', name: 'Pulses', slug: 'pulses', featured: true, image: 'category-pulses' },
-  { id: '2', name: 'Dairy', slug: 'dairy', featured: true, image: 'category-dairy' },
-  { id: '3', name: 'Fruits', slug: 'fruits', featured: true, image: 'category-fruits' },
-  { id: '4', name: 'Vegetables', slug: 'vegetables', featured: true, image: 'category-vegetables' },
-  { id: '5', name: 'Poultry', slug: 'poultry', featured: false, image: 'category-poultry' },
+export const categories: Omit<Category, '_id' | 'status'>[] = [
+  { id: '1', name: 'Pulses', slug: 'pulses', featured: true, image: '/uploads/category-pulses.jpg' },
+  { id: '2', name: 'Dairy', slug: 'dairy', featured: true, image: '/uploads/category-dairy.jpg' },
+  { id: '3', name: 'Fruits', slug: 'fruits', featured: true, image: '/uploads/category-fruits.jpg' },
+  { id: '4', name: 'Vegetables', slug: 'vegetables', featured: true, image: '/uploads/category-vegetables.jpg' },
+  { id: '5', name: 'Poultry', slug: 'poultry', featured: false, image: '/uploads/category-poultry.jpg' },
 ];
 
 export const products: Product[] = [
@@ -20,8 +20,9 @@ export const products: Product[] = [
       { id: 'v1-2', name: 'Food Grade', price: 300 },
     ],
     hsCode: '1005.90.00',
-    images: ['yellow-maize-1'],
+    images: ['/uploads/yellow-maize-1.jpg'],
     featured: true,
+    status: 'active',
   },
   {
     id: '2',
@@ -34,8 +35,9 @@ export const products: Product[] = [
       { id: 'v2-2', name: '45-55mm', price: 130 },
     ],
     hsCode: '0703.10.19',
-    images: ['red-onion-1'],
+    images: ['/uploads/red-onion-1.jpg'],
     featured: true,
+    status: 'active',
   },
   {
     id: '3',
@@ -48,8 +50,9 @@ export const products: Product[] = [
       { id: 'v3-2', name: 'Desi Chana', price: 350 },
     ],
     hsCode: '0713.20.20',
-    images: ['chickpeas-1'],
+    images: ['/uploads/chickpeas-1.jpg'],
     featured: false,
+    status: 'inactive',
   },
   {
     id: '4',
@@ -62,8 +65,9 @@ export const products: Product[] = [
       { id: 'v4-2', name: 'Skimmed', price: 55 },
     ],
     hsCode: '0401.20.00',
-    images: ['cow-milk-1'],
+    images: ['/uploads/cow-milk-1.jpg'],
     featured: true,
+    status: 'active',
   },
   {
     id: '5',
@@ -76,8 +80,9 @@ export const products: Product[] = [
       { id: 'v5-2', name: 'Half Dozen', price: 65 },
     ],
     hsCode: '0407.29.00',
-    images: ['desi-eggs-1'],
+    images: ['/uploads/desi-eggs-1.jpg'],
     featured: false,
+    status: 'inactive',
   },
   {
     id: '6',
@@ -89,8 +94,9 @@ export const products: Product[] = [
       { id: 'v6-1', name: 'Per Dozen', price: 800 },
     ],
     hsCode: '0804.50.20',
-    images: ['mangoes-1'],
+    images: ['/uploads/mangoes-1.jpg'],
     featured: true,
+    status: 'active',
   },
   {
     id: '7',
@@ -103,8 +109,9 @@ export const products: Product[] = [
       { id: 'v7-2', name: 'Layer', price: 35 },
     ],
     hsCode: '0105.11.00',
-    images: ['chicks-1'],
+    images: ['/uploads/chicks-1.jpg'],
     featured: false,
+    status: 'active',
   },
     {
     id: '8',
@@ -116,7 +123,8 @@ export const products: Product[] = [
       { id: 'v8-1', name: 'Food Grade', price: 320 },
     ],
     hsCode: '1005.90.10',
-    images: ['white-maize-1'],
+    images: ['/uploads/white-maize-1.jpg'],
     featured: true,
+    status: 'active',
   },
 ];
