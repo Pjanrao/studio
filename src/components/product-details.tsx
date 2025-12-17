@@ -73,7 +73,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 onValueChange={setSelectedVariantId}
               >
                 <SelectTrigger id="variant" className="w-full md:w-[180px]">
-                  <SelectValue />
+                  <SelectValue placeholder="Select variant" />
                 </SelectTrigger>
                 <SelectContent>
                   {product.variants.map((variant, index) => (
