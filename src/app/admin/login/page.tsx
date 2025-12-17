@@ -44,26 +44,37 @@ export default function AdminLoginPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Mock admin login
-    if (values.email === 'admin@example.com' && values.password === 'admin') {
-      const user = {
-        id: 'admin-001',
-        name: 'Admin User',
-        email: values.email,
-        role: 'Admin' as const,
-      };
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+      
+      const user = data.user;
+
+      if (user.role !== 'Admin') {
+        throw new Error('You are not authorized to access this page.');
+      }
+
       login(user);
       toast({
         title: '✅ Admin logged in successfully',
         description: `Welcome back, ${user.name}!`,
       });
-      router.push('/admin/dashboard'); // Redirect to an admin dashboard (to be created)
-    } else {
+      router.push('/admin/dashboard');
+    } catch (error: any) {
        toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: 'Invalid email or password.',
+        description: error.message || 'Invalid email or password.',
       });
     }
   }
@@ -106,8 +117,8 @@ export default function AdminLoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Login
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Logging in...' : 'Login'}
               </Button>
             </form>
           </Form>

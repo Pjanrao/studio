@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb';
+
 export interface Category {
   id: string;
   name: string;
@@ -45,8 +47,10 @@ export interface Order {
 }
 
 export interface User {
+  _id?: ObjectId;
   id: string;
   name: string;
   email: string;
+  password?: string;
   role: 'User' | 'Admin';
 }
