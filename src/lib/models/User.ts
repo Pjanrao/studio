@@ -58,10 +58,12 @@ export const findUserById = async (id: string): Promise<User | null> => {
     return toUser(userDoc);
 }
 
-export const createUser = async (userData: Omit<User, 'id'>): Promise<User> => {
+export const createUser = async (userData: Omit<User, 'id' | 'user_id'>): Promise<User> => {
   if (!users) await init();
 
-  const result = await users.insertOne(userData);
+  const user_id = `user_${Math.random().toString(36).substring(2, 9)}`;
+
+  const result = await users.insertOne({ ...userData, user_id });
   const newUser = await users.findOne({_id: result.insertedId});
   if (!newUser) {
     throw new Error("Failed to create user");

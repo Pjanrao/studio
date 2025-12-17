@@ -66,6 +66,7 @@ export interface Order {
 export interface User {
   _id?: ObjectId;
   id: string;
+  user_id: string;
   name: string;
   email: string;
   password?: string;
