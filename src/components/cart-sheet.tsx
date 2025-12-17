@@ -46,8 +46,8 @@ export function CartSheet() {
           <>
             <ScrollArea className="flex-1">
               <div className="flex flex-col gap-6 p-6 pr-8">
-                {cartItems.map((item) => (
-                  <div key={item.variantId} className="flex items-start gap-4">
+                {cartItems.map((item, index) => (
+                  <div key={`${item.variantId}-${index}`} className="flex items-start gap-4">
                     <div className="relative h-20 w-20 overflow-hidden rounded-md">
                       <Image
                         src={item.image}

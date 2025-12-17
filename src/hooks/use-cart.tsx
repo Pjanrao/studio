@@ -30,6 +30,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             : item
         );
       }
+      // Ensure we don't add duplicates if logic ever fails upstream
+      if (prevItems.some(item => item.variantId === itemToAdd.variantId)) {
+        return prevItems;
+      }
       return [...prevItems, { ...itemToAdd, quantity: 1 }];
     });
     toast({
