@@ -1,5 +1,6 @@
 "use client";
 
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -12,8 +13,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import type { CartItem, ShippingAddress, Order } from '@/lib/types';
+
 
 const shippingSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -21,16 +23,31 @@ const shippingSchema = z.object({
   city: z.string().min(1, 'City is required'),
   country: z.string().min(1, 'Country is required'),
   zip: z.string().min(1, 'ZIP code is required'),
-  paymentMethod: z.enum(['stripe', 'razorpay'], {
-    required_error: "You need to select a payment method.",
-  }),
 });
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { cartItems, cartTotal, clearCart } = useCart();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const form = useForm<z.infer<typeof shippingSchema>>({
     resolver: zodResolver(shippingSchema),
@@ -39,7 +56,7 @@ export default function CheckoutPage() {
     },
   });
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !isSubmitting) {
     router.replace('/cart');
     return null;
   }
@@ -48,15 +65,77 @@ export default function CheckoutPage() {
     router.replace('/login?redirect=/checkout');
     return null;
   }
+  
+  const handlePayment = async (shippingDetails: ShippingAddress) => {
+    setIsSubmitting(true);
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: cartTotal * 100, // amount in the smallest currency unit
+      currency: "INR",
+      name: "Riva Agro Exports",
+      description: "Order Payment",
+      handler: async function (response: any) {
+        try {
+          const orderData: Omit<Order, 'id' | '_id' | 'createdAt'> = {
+            userId: user.id,
+            items: cartItems,
+            total: cartTotal,
+            status: 'Processing' as const,
+            shippingAddress: shippingDetails,
+            paymentMethod: 'Razorpay',
+            paymentStatus: 'Paid' as const,
+            paymentId: response.razorpay_payment_id,
+          };
+
+          const res = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData),
+          });
+
+          if (!res.ok) {
+            throw new Error('Failed to save order');
+          }
+          
+          clearCart();
+          toast({
+            title: '✅ Order Placed Successfully',
+            description: 'Thank you for your purchase! Your order is being processed.',
+          });
+          router.push('/profile/orders');
+
+        } catch (error) {
+           toast({
+            variant: 'destructive',
+            title: 'Payment Error',
+            description: 'Failed to process your order after payment. Please contact support.',
+          });
+        } finally {
+            setIsSubmitting(false);
+        }
+      },
+      prefill: {
+        name: user.name,
+        email: user.email,
+      },
+      theme: {
+        color: "#166534"
+      }
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.on('payment.failed', function (response: any){
+            toast({
+                variant: "destructive",
+                title: "Payment Failed",
+                description: response.error.description,
+            });
+            setIsSubmitting(false);
+    });
+    rzp.open();
+  }
 
   function onSubmit(values: z.infer<typeof shippingSchema>) {
-    console.log('Order submitted:', values);
-    clearCart();
-    toast({
-      title: '✅ Order Placed Successfully',
-      description: 'Thank you for your purchase! Your order is being processed.',
-    });
-    router.push('/profile/orders');
+    handlePayment(values);
   }
 
   return (
@@ -94,27 +173,7 @@ export default function CheckoutPage() {
                 <CardTitle className="font-headline text-2xl">Payment Method</CardTitle>
               </CardHeader>
               <CardContent>
-                 <FormField
-                  control={form.control}
-                  name="paymentMethod"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormControl>
-                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl><RadioGroupItem value="stripe" /></FormControl>
-                            <FormLabel className="font-normal">Stripe</FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl><RadioGroupItem value="razorpay" /></FormControl>
-                            <FormLabel className="font-normal">Razorpay</FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <p className="text-muted-foreground">You will be redirected to Razorpay for a secure payment.</p>
               </CardContent>
             </Card>
           </div>
@@ -137,7 +196,9 @@ export default function CheckoutPage() {
                 </div>
               </CardContent>
               <CardContent>
-                 <Button type="submit" className="w-full" size="lg">Place Order</Button>
+                 <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                  {isSubmitting ? 'Processing...' : `Pay with Razorpay`}
+                </Button>
               </CardContent>
             </Card>
           </div>

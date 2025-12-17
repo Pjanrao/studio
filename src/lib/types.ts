@@ -40,15 +40,28 @@ export interface CartItem {
   image: string;
 }
 
+export interface ShippingAddress {
+    name: string;
+    address: string;
+    city: string;
+    country: string;
+    zip: string;
+}
+
 export interface Order {
+  _id?: ObjectId;
   id: string;
   userId: string;
   items: CartItem[];
   total: number;
-  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered';
-  shippingAddress: any;
+  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+  shippingAddress: ShippingAddress;
+  paymentMethod: string;
+  paymentStatus: 'Pending' | 'Paid' | 'Failed';
+  paymentId?: string;
   createdAt: string;
 }
+
 
 export interface User {
   _id?: ObjectId;

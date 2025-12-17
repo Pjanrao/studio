@@ -1,8 +1,7 @@
-
 'use client';
 
 import * as React from 'react';
-import { ListFilter, MoreHorizontal, Search, File, Calendar as CalendarIcon } from 'lucide-react';
+import { ListFilter, MoreHorizontal, Search, File, Calendar as CalendarIcon, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -15,100 +14,23 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { DateRange } from 'react-day-picker';
 import { addDays, format, isAfter, isBefore, parseISO } from 'date-fns';
+import type { Order } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
-type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
-
-const mockOrders = [
-  { 
-    id: 'ORD-001', 
-    customer: { name: 'John Doe', email: 'john.d@example.com'}, 
-    date: '2023-11-20', 
-    status: 'Delivered' as OrderStatus, 
-    total: 310.00,
-    paymentMethod: 'Razorpay',
-    paymentStatus: 'Paid',
-    items: [
-        { id: '1', name: 'Yellow Maize (Feed Grade)', quantity: 1, price: 250 },
-        { id: '2', name: 'Fresh Cow Milk (Skimmed)', quantity: 1, price: 60 },
-    ],
-    shippingAddress: {
-        address: '123 Farm Lane',
-        city: 'Greenville',
-        country: 'India',
-        zip: '12345'
-    }
-  },
-  { 
-    id: 'ORD-002', 
-    customer: { name: 'Jane Smith', email: 'jane.s@example.com'}, 
-    date: '2023-11-21', 
-    status: 'Shipped' as OrderStatus, 
-    total: 800.50,
-    paymentMethod: 'Stripe',
-    paymentStatus: 'Paid',
-    items: [
-        { id: '1', name: 'Alphonso Mangoes (Per Dozen)', quantity: 1, price: 800.50 },
-    ],
-    shippingAddress: {
-        address: '456 Market St',
-        city: 'Metropolis',
-        country: 'India',
-        zip: '67890'
-    }
-  },
-  { 
-    id: 'ORD-003', 
-    customer: { name: 'Bob Johnson', email: 'bob.j@example.com'}, 
-    date: '2023-11-22', 
-    status: 'Processing' as OrderStatus, 
-    total: 120.00,
-    paymentMethod: 'Razorpay',
-    paymentStatus: 'Pending',
-    items: [
-        { id: '1', name: 'Desi Eggs (Dozen)', quantity: 1, price: 120.00 },
-    ],
-     shippingAddress: {
-        address: '789 Ocean Blvd',
-        city: 'Seaside',
-        country: 'India',
-        zip: '101112'
-    }
-  },
-  { 
-    id: 'ORD-004', 
-    customer: { name: 'Alice Williams', email: 'alice.w@example.com'}, 
-    date: '2023-11-23', 
-    status: 'Pending' as OrderStatus, 
-    total: 450.75,
-    paymentMethod: 'Stripe',
-    paymentStatus: 'Paid',
-    items: [
-        { id: '1', name: 'Red Onion (55mm+)', quantity: 3, price: 150.25 },
-    ],
-     shippingAddress: {
-        address: '321 Hilltop Rd',
-        city: 'Mountain View',
-        country: 'India',
-        zip: '131415'
-    }
-  },
-];
-
-type Order = (typeof mockOrders)[0];
-
-const getStatusVariant = (status: OrderStatus) => {
+const getStatusVariant = (status: Order['status']) => {
     switch (status) {
       case 'Delivered': return 'default';
       case 'Shipped': return 'secondary';
       case 'Processing': return 'outline';
-      case 'Pending': return 'destructive';
+      case 'Pending': return 'outline';
       case 'Cancelled': return 'destructive';
       default: return 'outline';
     }
 };
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = React.useState(mockOrders);
+  const [orders, setOrders] = React.useState<Order[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [selectedOrder, setSelectedOrder] = React.useState<Order | null>(null);
   const [search, setSearch] = React.useState('');
   const [date, setDate] = React.useState<DateRange | undefined>({
@@ -118,21 +40,54 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = React.useState<string[]>([]);
   const [paymentStatusFilter, setPaymentStatusFilter] = React.useState<string[]>([]);
   const [paymentMethodFilter, setPaymentMethodFilter] = React.useState<string[]>([]);
+  const { toast } = useToast();
 
+  React.useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/orders');
+        if (!response.ok) throw new Error('Failed to fetch orders');
+        const data = await response.json();
+        setOrders(data);
+      } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch orders.' });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [toast]);
 
-  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
+  const handleStatusChange = async (orderId: string, newStatus: Order['status']) => {
+    const originalOrders = [...orders];
+    // Optimistic update
     setOrders(prevOrders => 
         prevOrders.map(order => 
             order.id === orderId ? { ...order, status: newStatus } : order
         )
     );
+    try {
+        const response = await fetch(`/api/orders/${orderId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to update status');
+        }
+        toast({ title: '✅ Success', description: 'Order status updated.'});
+    } catch (error) {
+        setOrders(originalOrders); // Revert on error
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not update order status.' });
+    }
   };
 
   const filteredOrders = React.useMemo(() => {
     return orders.filter(order => {
-        const orderDate = parseISO(order.date);
+        const orderDate = parseISO(order.createdAt);
         const dateMatch = (!date?.from || isAfter(orderDate, date.from)) && (!date?.to || isBefore(orderDate, addDays(date.to, 0)));
-        const searchMatch = order.id.toLowerCase().includes(search.toLowerCase()) || order.customer.name.toLowerCase().includes(search.toLowerCase());
+        const searchMatch = order.id.toLowerCase().includes(search.toLowerCase()) || order.shippingAddress.name.toLowerCase().includes(search.toLowerCase());
         const statusMatch = statusFilter.length === 0 || statusFilter.includes(order.status);
         const paymentStatusMatch = paymentStatusFilter.length === 0 || paymentStatusFilter.includes(order.paymentStatus);
         const paymentMethodMatch = paymentMethodFilter.length === 0 || paymentMethodFilter.includes(order.paymentMethod);
@@ -149,15 +104,15 @@ export default function AdminOrdersPage() {
     const headers = ['Order ID', 'Customer', 'Date', 'Status', 'Total', 'Payment Method', 'Payment Status'];
     const rows = filteredOrders.map(order => [
         order.id,
-        order.customer.name,
-        order.date,
+        order.shippingAddress.name,
+        format(new Date(order.createdAt), "dd MMM, yyyy"),
         order.status,
         order.total.toFixed(2),
         order.paymentMethod,
         order.paymentStatus
     ].join(','));
 
-    const csvContent = "data:text/csv;charset=utf-t," 
+    const csvContent = "data:text/csv;charset=utf-8," 
         + [headers.join(','), ...rows].join('\n');
     
     const encodedUri = encodeURI(csvContent);
@@ -228,7 +183,7 @@ export default function AdminOrdersPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                  <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuCheckboxItem checked={statusFilter.includes('Pending')} onCheckedChange={() => handleFilterChange(setStatusFilter, 'Pending')}>Pending</DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem checked={statusFilter.includes('Processing')} onCheckedChange={() => handleFilterChange(setStatusFilter, 'Processing')}>Processing</DropdownMenuCheckboxItem>
@@ -237,14 +192,9 @@ export default function AdminOrdersPage() {
                   <DropdownMenuCheckboxItem checked={statusFilter.includes('Cancelled')} onCheckedChange={() => handleFilterChange(setStatusFilter, 'Cancelled')}>Cancelled</DropdownMenuCheckboxItem>
                    <DropdownMenuSeparator />
                    <DropdownMenuLabel>Payment Status</DropdownMenuLabel>
-                   <DropdownMenuSeparator />
                    <DropdownMenuCheckboxItem checked={paymentStatusFilter.includes('Paid')} onCheckedChange={() => handleFilterChange(setPaymentStatusFilter, 'Paid')}>Paid</DropdownMenuCheckboxItem>
                    <DropdownMenuCheckboxItem checked={paymentStatusFilter.includes('Pending')} onCheckedChange={() => handleFilterChange(setPaymentStatusFilter, 'Pending')}>Pending</DropdownMenuCheckboxItem>
-                    <DropdownMenuSeparator />
-                   <DropdownMenuLabel>Payment Method</DropdownMenuLabel>
-                   <DropdownMenuSeparator />
-                   <DropdownMenuCheckboxItem checked={paymentMethodFilter.includes('Stripe')} onCheckedChange={() => handleFilterChange(setPaymentMethodFilter, 'Stripe')}>Stripe</DropdownMenuCheckboxItem>
-                   <DropdownMenuCheckboxItem checked={paymentMethodFilter.includes('Razorpay')} onCheckedChange={() => handleFilterChange(setPaymentMethodFilter, 'Razorpay')}>Razorpay</DropdownMenuCheckboxItem>
+                   <DropdownMenuCheckboxItem checked={paymentStatusFilter.includes('Failed')} onCheckedChange={() => handleFilterChange(setPaymentStatusFilter, 'Failed')}>Failed</DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button size="sm" variant="outline" className="h-10 gap-1" onClick={exportToCsv}>
@@ -268,16 +218,18 @@ export default function AdminOrdersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredOrders.map((order) => (
+              {isLoading ? (
+                <TableRow><TableCell colSpan={6} className="text-center">Loading...</TableCell></TableRow>
+              ) : filteredOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{order.customer.name}</TableCell>
-                  <TableCell>{format(new Date(order.date), "dd MMM, yyyy")}</TableCell>
+                  <TableCell className="font-medium">#{order.id.slice(-6).toUpperCase()}</TableCell>
+                  <TableCell>{order.shippingAddress.name}</TableCell>
+                  <TableCell>{format(new Date(order.createdAt), "dd MMM, yyyy")}</TableCell>
                   <TableCell>
                     {order.status === 'Delivered' || order.status === 'Cancelled' ? (
                         <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                     ) : (
-                        <Select value={order.status} onValueChange={(value: OrderStatus) => handleStatusChange(order.id, value)}>
+                        <Select value={order.status} onValueChange={(value: Order['status']) => handleStatusChange(order.id, value)}>
                             <SelectTrigger className="w-32 h-8 text-xs">
                                 <SelectValue />
                             </SelectTrigger>
@@ -293,19 +245,10 @@ export default function AdminOrdersPage() {
                   </TableCell>
                   <TableCell className="text-right">₹{order.total.toFixed(2)}</TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => setSelectedOrder(order)}>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Customer History</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                     <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
+                        <Eye className="h-4 w-4" />
+                        <span className="sr-only">View Details</span>
+                      </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -323,5 +266,3 @@ export default function AdminOrdersPage() {
     </>
   );
 }
-
-    

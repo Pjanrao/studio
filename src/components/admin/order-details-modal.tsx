@@ -1,24 +1,11 @@
-
-'use client';
+"use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-
-type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
-
-type Order = { 
-    id: string;
-    customer: { name: string; email: string; };
-    date: string;
-    status: OrderStatus;
-    total: number;
-    paymentMethod: string;
-    paymentStatus: string;
-    items: { id: string; name: string; quantity: number; price: number; }[];
-    shippingAddress: { address: string; city: string; country: string; zip: string; };
-};
+import type { Order } from "@/lib/types";
+import { format } from "date-fns";
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -33,27 +20,27 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Order Details: {order.id}</DialogTitle>
+          <DialogTitle>Order Details: #{order.id.slice(-6).toUpperCase()}</DialogTitle>
           <DialogDescription>
-            Date: {order.date}
+            Date: {format(new Date(order.createdAt), "PPP")}
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
             <div className="space-y-2">
                 <h3 className="font-semibold">Customer Details</h3>
-                <p>{order.customer.name}</p>
-                <p>{order.customer.email}</p>
-            </div>
-            <div className="space-y-2">
-                <h3 className="font-semibold">Shipping Address</h3>
-                <p>{order.shippingAddress.address}</p>
-                <p>{order.shippingAddress.city}, {order.shippingAddress.zip}</p>
+                <p>{order.shippingAddress.name}</p>
+                <p>{order.shippingAddress.address}, {order.shippingAddress.city}, {order.shippingAddress.zip}</p>
                 <p>{order.shippingAddress.country}</p>
             </div>
-             <div className="space-y-2">
+            <div className="space-y-2">
                 <h3 className="font-semibold">Payment Details</h3>
                 <p>Method: {order.paymentMethod}</p>
                 <div className="flex items-center gap-2">Status: <Badge variant={order.paymentStatus === 'Paid' ? 'default' : 'secondary'}>{order.paymentStatus}</Badge></div>
+                {order.paymentId && <p className="text-xs text-muted-foreground">ID: {order.paymentId}</p>}
+            </div>
+             <div className="space-y-2">
+                <h3 className="font-semibold">Status</h3>
+                <p><Badge>{order.status}</Badge></p>
             </div>
         </div>
         <Separator />
@@ -63,6 +50,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
             <TableHeader>
               <TableRow>
                 <TableHead>Product</TableHead>
+                <TableHead>Variant</TableHead>
                 <TableHead>Quantity</TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-right">Total</TableHead>
@@ -70,8 +58,9 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
             </TableHeader>
             <TableBody>
               {order.items.map(item => (
-                <TableRow key={item.id}>
+                <TableRow key={item.variantId}>
                   <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.variantName}</TableCell>
                   <TableCell>{item.quantity}</TableCell>
                   <TableCell className="text-right">₹{item.price.toFixed(2)}</TableCell>
                   <TableCell className="text-right">₹{(item.price * item.quantity).toFixed(2)}</TableCell>
