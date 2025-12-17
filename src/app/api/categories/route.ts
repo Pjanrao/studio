@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createCategory, getCategories } from '@/lib/models/Category';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 
 export async function GET() {
@@ -28,8 +28,13 @@ export async function POST(req: NextRequest) {
     // Handle image upload
     const bytes = await imageFile.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const uploadDir = join(process.cwd(), 'public', 'uploads');
     const filename = `${Date.now()}-${imageFile.name}`;
-    const path = join(process.cwd(), 'public', 'uploads', filename);
+    const path = join(uploadDir, filename);
+
+    // Ensure the upload directory exists
+    await mkdir(uploadDir, { recursive: true });
+    
     await writeFile(path, buffer);
     const imageUrl = `/uploads/${filename}`;
 
