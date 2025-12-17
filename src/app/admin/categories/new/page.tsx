@@ -180,7 +180,7 @@ export default function NewCategoryPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Featured Category</CardTitle>
-              </Header>
+              </CardHeader>
               <CardContent>
                 <FormField
                   control={form.control}
