@@ -71,19 +71,20 @@ export default async function HomePage() {
           </h2>
           <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-4">
             {featuredCategories.map((category) => {
-              const isMockCategory = !('_id' in category);
-              const categoryImage = isMockCategory ? PlaceHolderImages.find((img) => img.id === category.image) : { imageUrl: category.image, imageHint: category.name };
+              const categoryImage = '_id' in category ? category.image : PlaceHolderImages.find(p => p.id === category.image)?.imageUrl;
+              const imageHint = '_id' in category ? category.name : 'category image';
 
               return (
                 <Link key={category.id} href={`/products?category=${category.slug}`} className="group">
                   <Card className="overflow-hidden transition-all group-hover:shadow-xl group-hover:-translate-y-1">
                     <div className="relative h-40 w-full">
                       <Image
-                        src={categoryImage?.imageUrl || `https://picsum.photos/seed/${category.id}/400/300`}
+                        src={categoryImage || `https://picsum.photos/seed/${category.id}/400/300`}
                         alt={category.name}
                         fill
                         className="object-cover transition-transform group-hover:scale-105"
-                        data-ai-hint={categoryImage?.imageHint || 'category image'}
+                        data-ai-hint={imageHint}
+                        unoptimized
                       />
                     </div>
                     <CardContent className="p-4">

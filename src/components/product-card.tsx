@@ -33,6 +33,7 @@ export function ProductCard({ product }: ProductCardProps) {
               fill
               className="object-cover"
               data-ai-hint="product image"
+              unoptimized
             />
           </div>
         </Link>

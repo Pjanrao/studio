@@ -35,6 +35,7 @@ export function ProductImageGallery({ imageIds, productName }: ProductImageGalle
               fill
               className="object-cover"
               sizes="(max-width: 768px) 10vw, 5vw"
+              unoptimized
             />
           </button>
         ))}
@@ -48,6 +49,7 @@ export function ProductImageGallery({ imageIds, productName }: ProductImageGalle
             className="object-cover"
             sizes="(max-width: 768px) 80vw, 40vw"
             priority
+            unoptimized
           />
         </div>
       </div>
