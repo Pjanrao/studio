@@ -25,6 +25,7 @@ async function init() {
 })();
 
 function toOrder(doc: any): Order {
+    if (!doc) return doc;
     const { _id, ...rest } = doc;
     return { ...rest, id: _id.toHexString() } as Order;
 }

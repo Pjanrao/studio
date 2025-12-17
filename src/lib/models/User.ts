@@ -1,4 +1,5 @@
 
+
 import { Collection, Db, MongoClient, ObjectId } from 'mongodb';
 import clientPromise from '../mongodb';
 import type { User } from '../types';
@@ -25,6 +26,7 @@ async function init() {
 })();
 
 function toUser(doc: any): User {
+    if (!doc) return doc;
     const { _id, ...rest } = doc;
     return { ...rest, id: _id.toHexString() };
 }
