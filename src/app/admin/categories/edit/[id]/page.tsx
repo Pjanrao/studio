@@ -33,7 +33,6 @@ const formSchema = z.object({
 });
 
 export default function EditCategoryPage({ params }: { params: { id: string } }) {
-  const { id } = params;
   const router = useRouter();
   const searchParams = useSearchParams();
   const isReadOnly = searchParams.get('readOnly') === 'true';
@@ -56,6 +55,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
 
   useEffect(() => {
     const fetchCategory = async () => {
+      const { id } = params;
       try {
         const response = await fetch(`/api/categories/${id}`);
         if (response.status === 404) {
@@ -82,12 +82,13 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
         setIsLoading(false);
       }
     };
-    if (id) {
+    if (params.id) {
       fetchCategory();
     }
-  }, [id, toast, form]);
+  }, [params.id, toast, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const { id } = params;
     setIsSubmitting(true);
     const formData = new FormData();
     formData.append('name', values.name);
