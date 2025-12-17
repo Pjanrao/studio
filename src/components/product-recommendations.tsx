@@ -1,20 +1,28 @@
 "use client";
 
-import { useMemo } from 'react';
-import { products as allProducts } from '@/lib/data';
+import { useEffect, useState } from 'react';
 import type { Product } from '@/lib/types';
 import { ProductCard } from './product-card';
+import { getProducts } from '@/lib/models/Product';
 
 interface ProductRecommendationsProps {
   product: Product;
 }
 
 export function ProductRecommendations({ product }: ProductRecommendationsProps) {
-  const recommendedProducts = useMemo(() => {
-    return allProducts
-      .filter((p) => p.category === product.category && p.id !== product.id)
-      .slice(0, 3);
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    async function fetchRecommendations() {
+      const allProducts = await getProducts();
+      const related = allProducts
+        .filter((p) => p.category === product.category && p.id !== product.id)
+        .slice(0, 3);
+      setRecommendedProducts(related);
+    }
+    fetchRecommendations();
   }, [product]);
+
 
   if (recommendedProducts.length === 0) {
     return null;
