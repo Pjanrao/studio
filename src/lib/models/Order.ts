@@ -1,4 +1,5 @@
 
+
 import { Collection, Db, MongoClient, ObjectId } from 'mongodb';
 import clientPromise from '../mongodb';
 import type { Order } from '../types';
@@ -46,7 +47,7 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
 
 export const getOrdersByUserId = async (userId: string): Promise<Order[]> => {
     if (!orders) await init();
-    // The userId is stored as a string, not an ObjectId, so we query it directly.
+    // The userId is stored as a string, so we query it directly.
     const result = await orders.find({ userId: userId }).sort({ createdAt: -1 }).toArray();
     return result.map(toOrder);
 }
