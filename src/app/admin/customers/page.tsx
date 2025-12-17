@@ -17,16 +17,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CustomerDetailsModal } from '@/components/admin/customer-details-modal';
 import type { User } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = React.useState<User[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [selectedCustomer, setSelectedCustomer] = React.useState<User | null>(null);
   const { toast } = useToast();
 
   const fetchCustomers = React.useCallback(async () => {
@@ -50,12 +49,15 @@ export default function AdminCustomersPage() {
   const handleDelete = async (customerId: string) => {
     try {
         const response = await fetch(`/api/users/${customerId}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error('Failed to delete customer');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to delete customer');
+        }
         
         setCustomers(prev => prev.filter(customer => customer.id !== customerId));
         toast({ title: '✅ Success', description: 'Customer has been deleted.' });
-    } catch (error) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete customer.' });
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Error', description: error.message || 'Failed to delete customer.' });
     }
   };
 
@@ -100,9 +102,11 @@ export default function AdminCustomersPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => setSelectedCustomer(customer)}>
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">View</span>
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/admin/customers/${customer.id}`}>
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">View</span>
+                        </Link>
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -135,13 +139,6 @@ export default function AdminCustomersPage() {
           </Table>
         </CardContent>
       </Card>
-      {selectedCustomer && (
-        <CustomerDetailsModal
-            customer={selectedCustomer}
-            isOpen={!!selectedCustomer}
-            onClose={() => setSelectedCustomer(null)}
-        />
-      )}
     </>
   );
 }
