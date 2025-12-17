@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { categories } from '@/lib/data';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,17 +13,34 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from './ui/button';
+import type { Category } from '@/lib/types';
 
 export function MainNav({
   className,
   ...props
 }: React.HTMLAttributes<HTMLElement>) {
   const pathname = usePathname();
+  const [categories, setCategories] = useState<Category[]>([]);
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact Us' },
   ];
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories for nav', error);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   return (
     <nav
