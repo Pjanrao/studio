@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/select';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
-import { ProductRecommendations } from '@/components/product-recommendations';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 
@@ -92,7 +91,6 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           </div>
         </div>
       </div>
-      <ProductRecommendations product={product} />
     </div>
   );
 }
