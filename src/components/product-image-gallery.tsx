@@ -12,26 +12,36 @@ interface ProductImageGalleryProps {
 export function ProductImageGallery({ imageIds, productName }: ProductImageGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(imageIds[0]);
 
-  const images = imageIds.map(id => ({ id, url: id })).filter(Boolean);
-
-  if (!images.length) return null;
-  
-  const selectedImageUrl = images.find(img => img.id === selectedImage)?.url || images[0]?.url || '';
+  if (!imageIds || imageIds.length === 0) {
+    // Render a placeholder if no images are available
+    return (
+       <div className="relative aspect-square w-full overflow-hidden rounded-lg shadow-md">
+          <Image
+            src="https://picsum.photos/seed/placeholder/600/600"
+            alt="Placeholder image"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 80vw, 40vw"
+            priority
+          />
+        </div>
+    );
+  }
 
   return (
     <div className="flex flex-col-reverse md:flex-row gap-4">
       <div className="flex md:flex-col gap-2">
-        {images.map(image => image && (
+        {imageIds.map(image => (
           <button
-            key={image.id}
-            onClick={() => setSelectedImage(image.id)}
+            key={image}
+            onClick={() => setSelectedImage(image)}
             className={cn(
               "relative h-16 w-16 rounded-md overflow-hidden ring-2 ring-transparent transition",
-              selectedImage === image.id ? "ring-primary" : "hover:ring-primary/50"
+              selectedImage === image ? "ring-primary" : "hover:ring-primary/50"
             )}
           >
             <Image
-              src={image.url}
+              src={image}
               alt={`${productName} thumbnail`}
               fill
               className="object-cover"
@@ -43,7 +53,7 @@ export function ProductImageGallery({ imageIds, productName }: ProductImageGalle
       <div className="flex-1">
         <div className="relative aspect-square w-full overflow-hidden rounded-lg shadow-md">
           <Image
-            src={selectedImageUrl}
+            src={selectedImage}
             alt={productName}
             fill
             className="object-cover"

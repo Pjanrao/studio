@@ -3,7 +3,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Leaf, Truck, ShieldCheck } from 'lucide-react';
 import { products, categories as mockCategories } from '@/lib/data';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -23,25 +22,24 @@ async function getFeaturedCategories() {
     return allCategories.filter(c => c.featured && c.status === 'active');
   } catch (error) {
     console.error("Failed to fetch categories, falling back to mock data.", error);
-    return mockCategories.filter(c => c.featured);
+    return mockCategories.filter(c => c.featured).map(c => ({...c, status: 'active'}));
   }
 }
 
 
 export default async function HomePage() {
-  const heroImage = PlaceHolderImages.find((img) => img.id === 'hero-banner');
-  const aboutImage = PlaceHolderImages.find((img) => img.id === 'about-us-image');
+  const heroImage = { imageUrl: "https://images.unsplash.com/photo-1560493676-04071c5f467b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhZ3JpY3VsdHVyZSUyMGZpZWxkfGVufDB8fHx8MTc2NTgxMzQ2NXww&ixlib=rb-4.1.0&q=80&w=1080", imageHint: "agriculture field" };
+  const aboutImage = { imageUrl: "https://images.unsplash.com/photo-1659021245220-8cf62b36fe25?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmYXJtZXJzJTIwd29ya2luZ3xlbnwwfHx8fDE3NjU4NjQwNTN8MA&ixlib=rb-4.1.0&q=80&w=1080", imageHint: "farmers working" };
 
   const featuredProducts = products.filter((p) => p.featured);
-  const featuredCategories: (Category | (typeof mockCategories[0]))[] = await getFeaturedCategories();
+  const featuredCategories = await getFeaturedCategories();
 
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="relative h-[60vh] w-full text-white">
         <div className="absolute inset-0 bg-black/50 z-10" />
-        {heroImage && (
-          <Image
+        <Image
             src={heroImage.imageUrl}
             alt="Vast green field"
             fill
@@ -49,7 +47,6 @@ export default async function HomePage() {
             priority
             data-ai-hint={heroImage.imageHint}
           />
-        )}
         <div className="relative z-20 flex h-full flex-col items-center justify-center text-center">
           <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tight">
             Freshness Delivered, Globally.
@@ -70,20 +67,16 @@ export default async function HomePage() {
             Featured Categories
           </h2>
           <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-4">
-            {featuredCategories.map((category) => {
-              const categoryImage = '_id' in category ? category.image : `https://picsum.photos/seed/${category.id}/400/300`;
-              const imageHint = '_id' in category ? category.name : 'category image';
-
-              return (
+            {featuredCategories.map((category) => (
                 <Link key={category.id} href={`/products?category=${category.slug}`} className="group">
                   <Card className="overflow-hidden transition-all group-hover:shadow-xl group-hover:-translate-y-1">
                     <div className="relative h-40 w-full">
                       <Image
-                        src={categoryImage}
+                        src={category.image}
                         alt={category.name}
                         fill
                         className="object-cover transition-transform group-hover:scale-105"
-                        data-ai-hint={imageHint}
+                        data-ai-hint={category.name}
                       />
                     </div>
                     <CardContent className="p-4">
@@ -91,8 +84,7 @@ export default async function HomePage() {
                     </CardContent>
                   </Card>
                 </Link>
-              );
-            })}
+              ))}
           </div>
         </div>
       </section>
@@ -126,7 +118,7 @@ export default async function HomePage() {
       <section className="py-16 bg-background">
         <div className="container grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg">
-                {aboutImage && <Image src={aboutImage.imageUrl} alt="About Riva Agro Exports" fill className="object-cover" data-ai-hint={aboutImage.imageHint} />}
+                <Image src={aboutImage.imageUrl} alt="About Riva Agro Exports" fill className="object-cover" data-ai-hint={aboutImage.imageHint} />
             </div>
             <div>
                 <h2 className="font-headline text-3xl font-bold tracking-tight">About Riva Agro Exports</h2>

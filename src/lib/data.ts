@@ -1,11 +1,11 @@
 import type { Category, Product } from './types';
 
-export const categories: Omit<Category, '_id' | 'status'>[] = [
-  { id: '1', name: 'Pulses', slug: 'pulses', featured: true, image: '/uploads/category-pulses.jpg' },
-  { id: '2', name: 'Dairy', slug: 'dairy', featured: true, image: '/uploads/category-dairy.jpg' },
-  { id: '3', name: 'Fruits', slug: 'fruits', featured: true, image: '/uploads/category-fruits.jpg' },
-  { id: '4', name: 'Vegetables', slug: 'vegetables', featured: true, image: '/uploads/category-vegetables.jpg' },
-  { id: '5', name: 'Poultry', slug: 'poultry', featured: false, image: '/uploads/category-poultry.jpg' },
+export const categories: Omit<Category, '_id' | 'status' | 'image'>[] & { image: string, status: 'active' | 'inactive' }[] = [
+  { id: '1', name: 'Pulses', slug: 'pulses', featured: true, image: '/uploads/category-pulses.jpg', status: 'active' },
+  { id: '2', name: 'Dairy', slug: 'dairy', featured: true, image: '/uploads/category-dairy.jpg', status: 'active' },
+  { id: '3', name: 'Fruits', slug: 'fruits', featured: true, image: '/uploads/category-fruits.jpg', status: 'active' },
+  { id: '4', name: 'Vegetables', slug: 'vegetables', featured: true, image: '/uploads/category-vegetables.jpg', status: 'active' },
+  { id: '5', name: 'Poultry', slug: 'poultry', featured: false, image: '/uploads/category-poultry.jpg', status: 'active' },
 ];
 
 export const products: Product[] = [

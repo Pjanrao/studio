@@ -1,8 +1,7 @@
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function AboutPage() {
-  const aboutImage = PlaceHolderImages.find(p => p.id === 'about-us-image');
+  const aboutImage = { imageUrl: "https://images.unsplash.com/photo-1659021245220-8cf62b36fe25?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmYXJtZXJzJTIwd29ya2luZ3xlbnwwfHx8fDE3NjU4NjQwNTN8MA&ixlib=rb-4.1.0&q=80&w=1080", imageHint: "farmers working" };
   return (
     <div className="container py-16">
       <div className="text-center">
@@ -15,7 +14,7 @@ export default function AboutPage() {
       </div>
 
       <div className="mt-12 relative aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden shadow-lg">
-        {aboutImage && <Image src={aboutImage.imageUrl} alt="Riva Agro Exports team" fill className="object-cover" data-ai-hint={aboutImage.imageHint} />}
+        <Image src={aboutImage.imageUrl} alt="Riva Agro Exports team" fill className="object-cover" data-ai-hint={aboutImage.imageHint} />
       </div>
 
       <div className="max-w-4xl mx-auto mt-12 space-y-8">

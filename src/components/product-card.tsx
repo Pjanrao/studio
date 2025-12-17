@@ -16,7 +16,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const imageUrl = product.images[0] || 'https://picsum.photos/seed/placeholder/400/300';
+  const imageUrl = product.images?.[0] || 'https://picsum.photos/seed/placeholder/400/300';
   const firstVariant = product.variants[0];
 
   return (
