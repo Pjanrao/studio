@@ -40,6 +40,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         variantName: selectedVariant.name,
         price: selectedVariant.price,
         image: product.images[0],
+        quantity: 1,
       });
     }
   };
@@ -75,7 +76,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {product.variants.map((variant) => (
-                    <SelectItem key={variant.id} value={variant.id}>
+                    <SelectItem key={`${product.id}-${variant.id}`} value={variant.id}>
                       {variant.name}
                     </SelectItem>
                   ))}
