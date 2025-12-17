@@ -1,18 +1,55 @@
 
-'use client';
-
-import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, Package, ShoppingBag, Users } from 'lucide-react';
+import { getOrders } from '@/lib/models/Order';
+import { getProducts } from '@/lib/models/Product';
+import { getUsers } from '@/lib/models/User';
 
-export default function AdminDashboardPage() {
-  const { user } = useAuth();
+async function getDashboardData() {
+    try {
+        const [orders, products, users] = await Promise.all([
+            getOrders(),
+            getProducts(),
+            getUsers()
+        ]);
+
+        const totalRevenue = orders
+            .filter(order => order.status === 'Delivered')
+            .reduce((sum, order) => sum + order.total, 0);
+
+        const totalOrders = orders.length;
+
+        const totalCustomers = users.filter(user => user.role === 'User').length;
+
+        const activeProducts = products.filter(product => product.status === 'active').length;
+
+        return {
+            totalRevenue,
+            totalOrders,
+            totalCustomers,
+            activeProducts,
+        };
+    } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+        // Fallback to zeros in case of DB error
+        return {
+            totalRevenue: 0,
+            totalOrders: 0,
+            totalCustomers: 0,
+            activeProducts: 0,
+        };
+    }
+}
+
+
+export default async function AdminDashboardPage() {
+  const { totalRevenue, totalOrders, totalCustomers, activeProducts } = await getDashboardData();
 
   const summaryCards = [
-    { title: 'Total Revenue', icon: DollarSign, value: '₹45,231.89', change: '+20.1% from last month' },
-    { title: 'Orders', icon: ShoppingBag, value: '+2350', change: '+180.1% from last month' },
-    { title: 'Customers', icon: Users, value: '+1245', change: '+19% from last month' },
-    { title: 'Products Active', icon: Package, value: '573', change: '+201 since last hour' },
+    { title: 'Total Revenue', icon: DollarSign, value: `₹${totalRevenue.toFixed(2)}`, change: 'Based on delivered orders' },
+    { title: 'Total Orders', icon: ShoppingBag, value: `${totalOrders}`, change: 'All-time orders' },
+    { title: 'Total Customers', icon: Users, value: `${totalCustomers}`, change: 'Registered users' },
+    { title: 'Products Active', icon: Package, value: `${activeProducts}`, change: 'Currently active products' },
   ];
 
   return (
@@ -34,7 +71,7 @@ export default function AdminDashboardPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Welcome, {user?.name ?? 'Admin'}!</CardTitle>
+          <CardTitle>Welcome, Admin!</CardTitle>
         </CardHeader>
         <CardContent>
           <p>This is your central hub for managing the e-commerce store. You can manage orders, products, and customers from the navigation on the left.</p>
