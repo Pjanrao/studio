@@ -29,26 +29,31 @@ import type { Product } from '@/lib/types';
 
 
 export default function EditProductPage({ params }: { params: { id: string }}) {
-  const { id } = params;
   const searchParams = useSearchParams();
   const isReadOnly = searchParams.get('readOnly') === 'true';
 
   const [product, setProduct] = useState<Product | undefined>(undefined);
 
   useEffect(() => {
+    const productId = params.id;
     // In a real app, you would fetch this by ID from your API
-    const foundProduct = products.find(p => p.id === id);
+    const foundProduct = products.find(p => p.id === productId);
     setProduct(foundProduct);
-  }, [id]);
+  }, [params]);
 
 
   if (!product) {
     // You can show a loading state here
-    if (typeof window !== 'undefined') {
-        // notFound() must be called in a client component that is not in loading state
-        // so we check if window is defined before calling it.
+    if (typeof window !== 'undefined' && !product) {
         // A better approach would be a dedicated loading component
-        return notFound();
+        // This is a temporary check to avoid calling notFound on server
+        // until data fetching is implemented
+        const foundProduct = products.find(p => p.id === params.id);
+         if (!foundProduct) {
+             return notFound();
+         }
+         // This will likely cause a flicker, but it's a stop-gap
+         setProduct(foundProduct);
     }
     return null;
   }

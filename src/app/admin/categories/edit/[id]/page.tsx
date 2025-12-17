@@ -57,7 +57,10 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
 
   useEffect(() => {
     const categoryId = params.id;
-    if (!categoryId) return;
+    if (!categoryId) {
+      setIsLoading(false);
+      return;
+    }
 
     const fetchCategory = async () => {
       try {
@@ -89,7 +92,7 @@ export default function EditCategoryPage({ params }: { params: { id: string } })
     
     fetchCategory();
     
-  }, [params.id, toast, form, notFound]);
+  }, [params, toast, form, notFound]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const categoryId = params.id;
