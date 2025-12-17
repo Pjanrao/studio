@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -44,14 +45,34 @@ export default function RegisterPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Mock registration
-    console.log('New user registered:', values.email);
-    toast({
-      title: '✅ Account created successfully',
-      description: `Welcome, ${values.name}! Please log in to continue.`,
-    });
-    router.push('/login');
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+
+      const body = await response.json();
+
+      if (!response.ok) {
+        throw new Error(body.message || 'Failed to create account.');
+      }
+
+      toast({
+        title: '✅ Account created successfully',
+        description: `Welcome, ${values.name}! Please log in to continue.`,
+      });
+      router.push('/login');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Registration failed',
+        description: error.message,
+      });
+    }
   }
 
   return (
@@ -105,8 +126,8 @@ export default function RegisterPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Create Account
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>
           </Form>

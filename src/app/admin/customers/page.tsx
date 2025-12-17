@@ -19,22 +19,45 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CustomerDetailsModal } from '@/components/admin/customer-details-modal';
 import type { User } from '@/lib/types';
-
-const initialCustomers: User[] = [
-  { id: '1', name: 'John Doe', email: 'john.doe@example.com', role: 'User' },
-  { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', role: 'User' },
-  { id: '3', name: 'Admin User', email: 'admin@example.com', role: 'Admin' },
-  { id: '4', name: 'Bob Johnson', email: 'bob.j@example.com', role: 'User' },
-];
+import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminCustomersPage() {
-  const [customers, setCustomers] = React.useState(initialCustomers);
+  const [customers, setCustomers] = React.useState<User[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [selectedCustomer, setSelectedCustomer] = React.useState<User | null>(null);
+  const { toast } = useToast();
 
-  const handleDelete = (customerId: string) => {
-    setCustomers(customers.filter(customer => customer.id !== customerId));
+  const fetchCustomers = React.useCallback(async () => {
+    setIsLoading(true);
+    try {
+        const response = await fetch('/api/users');
+        if (!response.ok) throw new Error("Failed to fetch customers");
+        const data = await response.json();
+        setCustomers(data);
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch customers.' });
+    } finally {
+        setIsLoading(false);
+    }
+  }, [toast]);
+
+  React.useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
+
+  const handleDelete = async (customerId: string) => {
+    try {
+        const response = await fetch(`/api/users/${customerId}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Failed to delete customer');
+        
+        setCustomers(prev => prev.filter(customer => customer.id !== customerId));
+        toast({ title: '✅ Success', description: 'Customer has been deleted.' });
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete customer.' });
+    }
   };
-
 
   return (
     <>
@@ -57,11 +80,24 @@ export default function AdminCustomersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {customers.map((customer) => (
+              {isLoading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-8 w-20" /></TableCell>
+                    </TableRow>
+                ))
+              ) : customers.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell>{customer.email}</TableCell>
-                  <TableCell>{customer.role}</TableCell>
+                  <TableCell>
+                    <Badge variant={customer.role === 'Admin' ? 'destructive' : 'secondary'}>
+                        {customer.role}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Button variant="ghost" size="icon" onClick={() => setSelectedCustomer(customer)}>
