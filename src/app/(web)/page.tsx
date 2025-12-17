@@ -83,8 +83,7 @@ export default async function HomePage() {
                         alt={category.name}
                         fill
                         className="object-cover transition-transform group-hover:scale-105"
-                        data-ai-hint={categoryImage?.imageHint}
-                        unoptimized={!isMockCategory}
+                        data-ai-hint={categoryImage?.imageHint || 'category image'}
                       />
                     </div>
                     <CardContent className="p-4">
