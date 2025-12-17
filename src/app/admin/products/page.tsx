@@ -1,8 +1,8 @@
-
 'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   MoreHorizontal,
   PlusCircle,
@@ -47,24 +47,71 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
-
-const initialProducts = [
-  { id: '1', name: 'Yellow Maize', status: 'active', price: 250, category: 'Pulses' },
-  { id: '2', name: 'Red Onion', status: 'active', price: 150, category: 'Vegetables' },
-  { id: '3', name: 'Chickpeas (Chana)', status: 'inactive', price: 400, category: 'Pulses' },
-  { id: '4', name: 'Fresh Cow Milk', status: 'active', price: 60, category: 'Dairy' },
-  { id: '5', name: 'Desi Eggs', status: 'inactive', price: 120, category: 'Poultry' },
-  { id: '6', name: 'Alphonso Mangoes', status: 'active', price: 800, category: 'Fruits' },
-];
+import { useToast } from '@/hooks/use-toast';
+import type { Product } from '@/lib/types';
 
 export default function AdminProductsPage() {
-    const [products, setProducts] = React.useState(initialProducts);
+    const [products, setProducts] = React.useState<Product[]>([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const { toast } = useToast();
 
-    const handleDelete = (productId: string) => {
-        setProducts(products.filter(product => product.id !== productId));
+    const fetchProducts = React.useCallback(async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        setProducts(data);
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to fetch products.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }, [toast]);
+    
+    React.useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
+
+    const handleDelete = async (productId: string) => {
+        try {
+          const response = await fetch(`/api/products/${productId}`, {
+            method: 'DELETE',
+          });
+          if (!response.ok) throw new Error('Failed to delete');
+          
+          setProducts(products.filter(product => product.id !== productId));
+          toast({
+            title: '✅ Success',
+            description: 'Product has been deleted.',
+          });
+        } catch (error) {
+           toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to delete product.',
+          });
+        }
     };
+    
+    // Simple client-side search and filter
+    const [searchTerm, setSearchTerm] = React.useState('');
+    const [activeTab, setActiveTab] = React.useState('all');
+
+    const filteredProducts = React.useMemo(() => {
+        return products
+            .filter(p => {
+                if (activeTab === 'all') return true;
+                return p.status === activeTab;
+            })
+            .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }, [products, searchTerm, activeTab]);
 
   return (
     <>
@@ -86,7 +133,7 @@ export default function AdminProductsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="all">
+          <Tabs defaultValue="all" onValueChange={setActiveTab}>
             <div className="flex items-center justify-between">
               <TabsList>
                 <TabsTrigger value="all">All</TabsTrigger>
@@ -99,74 +146,19 @@ export default function AdminProductsPage() {
                   type="search"
                   placeholder="Search products..."
                   className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
             <TabsContent value="all">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Price</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                       <TableCell>{product.category}</TableCell>
-                      <TableCell>
-                        <Badge variant={product.status === 'active' ? 'default' : 'outline'}>
-                          {product.status === 'active' ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">₹{product.price.toFixed(2)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                           <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/admin/products/edit/${product.id}?readOnly=true`}>
-                              <Eye className="h-4 w-4" />
-                              <span className="sr-only">View</span>
-                            </Link>
-                          </Button>
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/admin/products/edit/${product.id}`}>
-                              <Pencil className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
-                            </Link>
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Delete</span>
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This action cannot be undone. This will permanently delete the
-                                  product "{product.name}".
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(product.id)}>
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <ProductTable products={filteredProducts} isLoading={isLoading} handleDelete={handleDelete} />
+            </TabsContent>
+             <TabsContent value="active">
+              <ProductTable products={filteredProducts} isLoading={isLoading} handleDelete={handleDelete} />
+            </TabsContent>
+             <TabsContent value="inactive">
+              <ProductTable products={filteredProducts} isLoading={isLoading} handleDelete={handleDelete} />
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -191,4 +183,92 @@ export default function AdminProductsPage() {
       </Card>
     </>
   );
+}
+
+
+function ProductTable({ products, isLoading, handleDelete }: { products: Product[], isLoading: boolean, handleDelete: (id: string) => void }) {
+  if (isLoading) {
+    return <div className="text-center py-8">Loading products...</div>;
+  }
+
+  if (products.length === 0) {
+    return <div className="text-center py-8">No products found.</div>;
+  }
+    
+  return (
+     <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[80px]">Image</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Category</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Price</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {products.map((product) => (
+          <TableRow key={product.id}>
+             <TableCell>
+                <Image
+                    src={product.images[0]}
+                    alt={product.name}
+                    width={64}
+                    height={64}
+                    className="rounded-md object-cover"
+                />
+            </TableCell>
+            <TableCell className="font-medium">{product.name}</TableCell>
+              <TableCell>{product.category}</TableCell>
+            <TableCell>
+              <Badge variant={product.status === 'active' ? 'default' : 'outline'}>
+                {product.status === 'active' ? 'Active' : 'Inactive'}
+              </Badge>
+            </TableCell>
+            <TableCell className="text-right">₹{product.variants[0]?.price.toFixed(2)}</TableCell>
+            <TableCell className="text-right">
+              <div className="flex items-center justify-end gap-2">
+                  <Button variant="ghost" size="icon" asChild>
+                  <Link href={`/admin/products/edit/${product.id}?readOnly=true`}>
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">View</span>
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href={`/admin/products/edit/${product.id}`}>
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">Edit</span>
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the
+                        product "{product.name}".
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDelete(product.id)}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
 }

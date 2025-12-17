@@ -17,6 +17,7 @@ export interface ProductVariant {
 }
 
 export interface Product {
+  _id?: ObjectId;
   id: string;
   name: string;
   slug: string;
@@ -24,8 +25,9 @@ export interface Product {
   category: string; // category slug
   variants: ProductVariant[];
   hsCode: string;
-  images: string[]; // image IDs from placeholder-images.json
+  images: string[];
   featured: boolean;
+  status: 'active' | 'inactive';
 }
 
 export interface CartItem {

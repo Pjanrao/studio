@@ -1,8 +1,6 @@
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { Leaf, Truck, ShieldCheck } from 'lucide-react';
-import { products, categories as mockCategories } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -14,25 +12,32 @@ import {
 } from '@/components/ui/carousel';
 import { ProductCard } from '@/components/product-card';
 import { getCategories } from '@/lib/models/Category';
-import type { Category } from '@/lib/types';
+import { getProducts } from '@/lib/models/Product';
+import type { Category, Product } from '@/lib/types';
 
-async function getFeaturedCategories() {
-  try {
-    const allCategories = await getCategories();
-    return allCategories.filter(c => c.featured && c.status === 'active');
-  } catch (error) {
-    console.error("Failed to fetch categories, falling back to mock data.", error);
-    return mockCategories.filter(c => c.featured).map(c => ({...c, status: 'active'}));
-  }
+
+async function getData() {
+    try {
+        const [categories, products] = await Promise.all([
+            getCategories(),
+            getProducts()
+        ]);
+        return { categories, products };
+    } catch (error) {
+        console.error("Failed to fetch data, falling back to mock data.", error);
+        // Fallback to empty arrays in case of DB error
+        return { categories: [], products: [] };
+    }
 }
-
 
 export default async function HomePage() {
   const heroImage = { imageUrl: "https://images.unsplash.com/photo-1560493676-04071c5f467b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhZ3JpY3VsdHVyZSUyMGZpZWxkfGVufDB8fHx8MTc2NTgxMzQ2NXww&ixlib=rb-4.1.0&q=80&w=1080", imageHint: "agriculture field" };
   const aboutImage = { imageUrl: "https://images.unsplash.com/photo-1659021245220-8cf62b36fe25?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmYXJtZXJzJTIwd29ya2luZ3xlbnwwfHx8fDE3NjU4NjQwNTN8MA&ixlib=rb-4.1.0&q=80&w=1080", imageHint: "farmers working" };
 
-  const featuredProducts = products.filter((p) => p.featured);
-  const featuredCategories = await getFeaturedCategories();
+  const { categories, products } = await getData();
+
+  const featuredProducts = products.filter((p) => p.featured && p.status === 'active');
+  const featuredCategories = categories.filter(c => c.featured && c.status === 'active');
 
   return (
     <div className="flex flex-col">
@@ -72,7 +77,7 @@ export default async function HomePage() {
                   <Card className="overflow-hidden transition-all group-hover:shadow-xl group-hover:-translate-y-1">
                     <div className="relative h-40 w-full">
                       <Image
-                        src={category.image}
+                        src={category.image || 'https://picsum.photos/seed/placeholder/400/300'}
                         alt={category.name}
                         fill
                         className="object-cover transition-transform group-hover:scale-105"
