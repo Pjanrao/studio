@@ -79,7 +79,7 @@ export default async function HomePage() {
                   <Card className="overflow-hidden transition-all group-hover:shadow-xl group-hover:-translate-y-1">
                     <div className="relative h-40 w-full">
                       <Image
-                        src={categoryImage?.imageUrl || ''}
+                        src={categoryImage?.imageUrl || `https://picsum.photos/seed/${category.id}/400/300`}
                         alt={category.name}
                         fill
                         className="object-cover transition-transform group-hover:scale-105"
